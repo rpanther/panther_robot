@@ -27,6 +27,8 @@
   #include <avr/power.h>
 #endif
 
+#include "TimerOne.h"
+// ROS header
 #include <ros.h>
 #include <geometry_msgs/Twist.h>
 
@@ -82,6 +84,10 @@ void setup() {
   pixels_right.begin(); // This initializes the NeoPixel library.
   // Evaluate size of colors led array
   size_colors = sizeof(colors)/sizeof(uint32_t);
+
+  Timer1.initialize(500000);         // initialize timer1, and set a 1/2 second period
+  Timer1.pwm(9, 512);                // setup pwm on pin 9, 50% duty cycle
+  Timer1.attachInterrupt(callback);  // attaches callback() as a timer overflow interrupt
   
   // Initialization ROS node
   nh.initNode();
@@ -89,14 +95,20 @@ void setup() {
   nh.subscribe(sub);
   // TODO to REMOVE
   nh.advertise(chatter);
+  // -- END
+}
+// ROS spin update
+void callback() {
+  //digitalWrite(LED_BUILTIN, HIGH-digitalRead(LED_BUILTIN));   // blink the led
+  nh.spinOnce();
 }
 
 void loop() {
-
+  //TODO To REMOVE
   str_msg.data = hello;
   chatter.publish( &str_msg );
-  nh.spinOnce();
-
+  // -- END
+  
   // Color swipe led loop
   for(int i = 0; i < size_colors; ++i) {
     led_swipe(colors[i], DELAY_VAL, 0, NUMPIXELS);
