@@ -96,6 +96,15 @@ void setup() {
   // TODO to REMOVE
   nh.advertise(chatter);
   // -- END
+
+  // TODO use to read list of color sequence
+  float pid_constants[3];
+  if(!nh.getParam("~pid", pid_constants, 3)){ 
+       //default values
+       pid_constants[0]= 1;
+       pid_constants[1]=0.24;
+       pid_constants[2]=0.01; 
+  }
 }
 // ROS spin update
 void callback() {
