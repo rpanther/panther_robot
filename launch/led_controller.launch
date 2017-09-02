@@ -33,7 +33,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   
   <!-- Launch Teesny controller -->
   <node pkg="rosserial_python" type="serial_node.py" name="led_controller" args="$(arg port)" output="screen">
-    <!-- <remap from="" to=""/>-->
+    <!--<rosparam param="color_sequence">[1, 2, 3, 4]</rosparam>-->
+    <remap from="/cmd_vel" to="/panther_velocity_controller/cmd_vel"/>
   </node>
 
 </launch>
