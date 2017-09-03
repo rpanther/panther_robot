@@ -47,6 +47,11 @@
 #define TWIST_SUBSCRIBER_TOPIC "/cmd_vel"
 // -------------------------//
 
+// Teensy Reset REFERENCE https://forum.pjrc.com/threads/44857-How-to-Reset-Restart-Teensy-3-5-using-sotware
+#define RESTART_ADDR 0xE000ED0C
+#define READ_RESTART() (*(volatile uint32_t *)RESTART_ADDR)
+#define WRITE_RESTART(val) ((*(volatile uint32_t *)RESTART_ADDR) = (val))
+
 #include <Adafruit_NeoPixel.h>
 #ifdef __AVR__
 #include <avr/power.h>
@@ -66,13 +71,22 @@
 #define NEOPIXEL_LED_OFF   Adafruit_NeoPixel::Color(0, 0, 0)       // Default LED OFF
 #define NEOPIXEL_LED_ON    Adafruit_NeoPixel::Color(255, 255, 255) // Default WHITE ON
 
+typedef struct _soft_timer {
+  bool start;
+  unsigned long currentMillis;
+  unsigned long previousMillis;
+  long interval;
+} soft_timer_t;
+
 typedef struct _neo_pixel_swipe {
   // When we setup the NeoPixel library, we tell it how many pixels, and which pin to use to send signals.
   // Note that for older NeoPixel strips you might need to change the third parameter--see the strandtest
-  Adafruit_NeoPixel NEOPixel;  // NEOPIXEL line definition
-  int line_lng;
+  Adafruit_NeoPixel *NEOPixel;  // NEOPIXEL line definition
+  int length;
+  int start;
+  int stop;
+  uint32_t bg_color;
   int idx;
-  int color_idx;
 } neo_pixel_swipe_t;
 
 // ------ VARIABLES ---------//
@@ -80,12 +94,14 @@ typedef struct _neo_pixel_swipe {
 // ROS Node Handle
 ros::NodeHandle  nh;
 
-neo_pixel_swipe_t line_swipe[] = {
-  { Adafruit_NeoPixel(NUMPIXELS, PIN_LEFT,  NEO_GRB + NEO_KHZ800), DEFAULT_LINE_LNG, 0, 0 },  // Left line definition
-  { Adafruit_NeoPixel(NUMPIXELS, PIN_RIGHT, NEO_GRB + NEO_KHZ800), DEFAULT_LINE_LNG, 0, 0 }  // Right line definition
-};
-// Define size Adafruit_NeoPixel lines
-#define SIZE_NEOPIXEL 2
+// NEO Pixel definition
+Adafruit_NeoPixel neo_pixel_left  = Adafruit_NeoPixel(NUMPIXELS, PIN_LEFT,  NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel neo_pixel_right = Adafruit_NeoPixel(NUMPIXELS, PIN_RIGHT, NEO_GRB + NEO_KHZ800);
+
+neo_pixel_swipe_t line_swipe_left; // Left line definition
+neo_pixel_swipe_t line_swipe_right; // Right line definition
+int color_idx_left = 0, color_idx_right = 0;
+
 // Velocity of line swipe
 volatile float line_vel = DEFAULT_LINE_VEL;
 volatile float line_ang = DEFAULT_LINE_ANG;
@@ -98,9 +114,12 @@ uint32_t colors[5];
 // Size of LED colors
 int size_colors = 0;
 
+soft_timer_t timer;
+soft_timer_t twist_check;
+
 // ------SUBSCRIBER --------//
 
-// char tmp_buffer[50];
+char tmp_buffer[50];
 /**
    @brief TwistMessageCb Twist message callback and conversion linear and angular velocity in led effect
 */
@@ -108,9 +127,11 @@ void TwistMessageCb( const geometry_msgs::Twist& msg) {
   // Save linear velocity
   line_vel = msg.linear.x;
   line_ang = msg.angular.z;
+  // Reset timer check twist message
+  soft_timer_start(twist_check);
   // LOG linear and angular
-  // sprintf(tmp_buffer, "lin:%.2f ang:%.2f", msg.linear.x, msg.angular.z);
-  // nh.loginfo(tmp_buffer);
+  sprintf(tmp_buffer, "lin:%.2f ang:%.2f", msg.linear.x, msg.angular.z);
+  nh.logdebug(tmp_buffer);
 }
 
 // Define the twist subscriber
@@ -126,12 +147,34 @@ void setup() {
   // Set low LED
   digitalWrite(LED_GREEN, LOW);
 
-  // This initializes the NeoPixel library.
-  for (unsigned int pixIdx = 0; pixIdx < SIZE_NEOPIXEL; ++pixIdx) {
-    line_swipe[pixIdx].NEOPixel.begin();
+  // Initialization ROS node
+  nh.initNode();
+  // Initialization subscriber
+  nh.subscribe(sub);
+  
+  // Wait connection from ROS
+  while (!nh.connected()) {
+    nh.spinOnce();
   }
-  // Evaluate size of colors led array
-  size_colors = sizeof(colors) / sizeof(uint32_t);
+  nh.loginfo("Connected!");
+
+  // Reference Parameters http://wiki.ros.org/rosserial/Overview/Parameters
+  // Get param gain linear velocity
+  if (!nh.getParam("~k_v", &k_v, 1)) {
+    nh.logwarn("Load default k_v = 1");
+    k_v = 1;
+  }
+  // Get param gain angular velocity
+  if (!nh.getParam("~k_w", &k_w, 1)) {
+    nh.logwarn("Load default k_w = 1");
+    k_w = 1;
+  }
+
+  nh.loginfo("Parameters loaded");
+
+  // Initialization swipe line
+  led_swipe_init(line_swipe_left, &neo_pixel_left, L1_POS, L2_POS, DEFAULT_LINE_LNG, NEOPIXEL_LED_OFF);
+  led_swipe_init(line_swipe_right, &neo_pixel_right, L1_POS, L2_POS, DEFAULT_LINE_LNG, NEOPIXEL_LED_OFF);
 
   Timer1.initialize(500000);             // initialize timer1, and set a 1/2 second period
   Timer1.attachInterrupt(callbackLeft);  // attaches callback() as a timer overflow interrupt
@@ -142,19 +185,10 @@ void setup() {
   Timer1.stop();
   Timer3.stop();
 
-  // Initialization ROS node
-  nh.initNode();
-  // Initialization subscriber
-  nh.subscribe(sub);
-
-  // Get param gain linear velocity
-  if (!nh.getParam("~k_v", &k_v, 1)) {
-    k_v = 1;
-  }
-  // Get param gain angular velocity
-  if (!nh.getParam("~k_w", &k_w, 1)) {
-    k_w = 1;
-  }
+  soft_timer_init(timer, 1.0);
+  // twist check controller
+  soft_timer_init(twist_check, 5.0);
+  soft_timer_stop(twist_check);
 
   // Load default led configuration
   colors[0] = Adafruit_NeoPixel::Color(0, INTENSITY, 0);
@@ -162,6 +196,8 @@ void setup() {
   colors[2] = Adafruit_NeoPixel::Color(0, 0, INTENSITY);
   colors[3] = Adafruit_NeoPixel::Color(INTENSITY, INTENSITY, 0);
   colors[4] = Adafruit_NeoPixel::Color(INTENSITY, 0, INTENSITY);
+  // Evaluate size of colors led array
+  size_colors = sizeof(colors) / sizeof(uint32_t);
 }
 
 // --------LOOP ----------//
@@ -172,7 +208,31 @@ volatile float vel_left_old = vel_left;
 volatile float vel_right_old = vel_right;
 
 void loop() {
-  //digitalWrite(LED_BUILTIN, HIGH - digitalRead(LED_BUILTIN)); // blink the led
+
+  // Check if ROS is connected
+  if (!nh.connected()) {
+    // Clear line
+    led_swipe_reset(line_swipe_left);
+    led_swipe_reset(line_swipe_right);
+    // reset Board
+    WRITE_RESTART(0x5FA0004);
+  }
+
+  if (soft_timer_run(timer)) {
+    // set the LED with the ledState of the variable:
+    digitalWrite(LED_BUILTIN, HIGH - digitalRead(LED_BUILTIN)); // blink the led
+  }
+
+  // If any message as received in N time. The swipe reset and wait a new message
+  if (soft_timer_run(twist_check)) {
+    // Send log message
+    nh.loginfo("No twist message for 5 seconds");
+    // reset swipe effect
+    led_swipe_reset(line_swipe_left);
+    led_swipe_reset(line_swipe_right);
+    // stop twist check timer
+    soft_timer_stop(twist_check);
+  }
 
   vel_left = k_v * line_vel + k_w * line_ang;
   vel_right = k_v * line_vel - k_w * line_ang;
@@ -208,9 +268,13 @@ void loop() {
 void callbackLeft() {
   if (vel_left != 0) {
     // Launch swipe effect with the color on the list
-    led_swipe2(&line_swipe[0], colors[line_swipe[0].color_idx], L1_POS, L2_POS);
-    // Update index swipe led
-    update_index(&line_swipe[0], vel_left);
+    color_idx_left += led_swipe_run(line_swipe_left, colors[color_idx_left], vel_left);
+    // Update color index
+    if (color_idx_left >= size_colors) {
+      color_idx_left = 0;
+    } else if (color_idx_left < 0) {
+      color_idx_left = size_colors - 1;
+    }
   }
 }
 /**
@@ -219,98 +283,13 @@ void callbackLeft() {
 void callbackRight() {
   if (vel_right != 0) {
     // Launch swipe effect with the color on the list
-    led_swipe2(&line_swipe[1], colors[line_swipe[1].color_idx], L1_POS, L2_POS);
-    // Update index swipe led
-    update_index(&line_swipe[1], vel_right);
-  }
-}
-/**
-   Update index
-*/
-void update_index(neo_pixel_swipe_t *line, float vel) {
-  // Set increase or decrease velocity led
-  line->idx += sign(vel);
-  // Reset index after
-  if (line->idx >= L2_POS) {
-    line->idx = L1_POS;
-    line->color_idx++;
-  } else if (line->idx <= L1_POS) {
-    line->idx = L2_POS;
-    line->color_idx--;
-  }
-  // Check color index
-  if (line->color_idx >= 5) {
-    line->color_idx = 0;
-  } else if (line->color_idx < 0) {
-    line->color_idx = 4;
-  }
-}
-/**
-   @brief Swipe led with a short colored line with length lng
-   @param pixels Pointer to Adafruit_NeoPixel
-   @param pixel_size length of pixels
-   @param color The color to set the line
-   @param idx index to plot the swipe
-   @param sta first neopixel led to start
-   @param sto last neopixel to stop the effect
-*/
-void led_swipe2(neo_pixel_swipe_t *line, uint32_t color, int sta, int sto) {
-  for (int i = sta - line->line_lng; i < sto; ++i) {
-    // Set i led to the color
-    if (line->idx >= i && line->idx < i + line->line_lng) {
-      line->NEOPixel.setPixelColor(i, color);
-    } else {
-      // Otherwise switch off the i led
-      line->NEOPixel.setPixelColor(i, 0);
+    color_idx_right += led_swipe_run(line_swipe_right, colors[color_idx_right], vel_right);
+    // Update color index
+    if (color_idx_right >= size_colors) {
+      color_idx_right = 0;
+    } else if (color_idx_right < 0) {
+      color_idx_right = size_colors - 1;
     }
   }
-  // This sends the updated pixel color to the hardware.
-  line->NEOPixel.show();
-}
-/**
-  @brief Swipe led along the neopixel line in order from the first led to the last
-  @param pixels Pointer to Adafruit_NeoPixel
-  @param pixel_size length of pixels
-  @param color The color to set the line
-  @param d delay to show the effect
-  @param sta first neopixel led to start
-  @param sto last neopixel to stop the effect
-*/
-void led_swipe(Adafruit_NeoPixel * pixels, size_t pixel_size, uint32_t color, uint32_t d, uint32_t sta, uint32_t sto) {
-  for (unsigned int i = sta; i < sto; i++) {
-    for (unsigned int pixIdx = 0; pixIdx < pixel_size; ++pixIdx) {
-      pixels[pixIdx].setPixelColor(i, color);
-      pixels[pixIdx].show(); // This sends the updated pixel color to the hardware.
-    }
-    delay(d); // Delay for a period of time (in milliseconds).
-  }
-  // Delay for a period of time (in milliseconds).
-  delay(500);
-}
-/**
-   @brief Swipe led along the neopixel line in order from the last led to the first
-   @param pixels Pointer to Adafruit_NeoPixel
-   @param pixel_size length of pixels
-   @param color The color to set the line
-   @param d delay to show the effect
-   @param sta first neopixel led to start
-   @param sto last neopixel to stop the effect
-*/
-void led_swipe_reverse(Adafruit_NeoPixel * pixels, size_t pixel_size, uint32_t color, uint32_t d, uint32_t sta, uint32_t sto) {
-  for (unsigned int i = sta; i < sto; i++) {
-    for (unsigned int pixIdx = 0; pixIdx < pixel_size; ++pixIdx) {
-      pixels[pixIdx].setPixelColor(i, color);
-      pixels[pixIdx].show(); // This sends the updated pixel color to the hardware.
-    }
-    delay(d); // Delay for a period of time (in milliseconds).
-  }
-  // Delay for a period of time (in milliseconds).
-  delay(300);
-}
-
-int sign(float x) {
-  if (x > 0) return 1;
-  else if (x < 0) return -1;
-  else return 0;
 }
 

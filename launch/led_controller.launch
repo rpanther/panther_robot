@@ -34,7 +34,14 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   
   <!-- Launch Teesny controller -->
   <node pkg="rosserial_python" type="serial_node.py" name="led_controller" args="$(arg port)" output="screen">
-    <!--<rosparam param="color_sequence">[1, 2, 3, 4]</rosparam>-->
+    <!-- Load default linear and angular velocity gain -->
+    <param name="k_v" type="double" value="1.0" />
+    <param name="k_w" type="double" value="1.0" />
+    <!-- Load color sequence -->
+    <!--
+    <rosparam param="color_sequence">[1, 2, 3, 4]</rosparam>
+    -->
+    <!-- Remap twist command topic -->
     <remap from="/cmd_vel" to="$(arg twist)"/>
   </node>
 
