@@ -28,14 +28,13 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
 <launch>
-  <!-- Set Lidar port -->
-  <arg name="port" default="/dev/ttyACM0" />
-  <arg name="twist" default="/panther_velocity_controller/cmd_vel" />
   
   <!-- Launch Teesny controller -->
-  <node pkg="rosserial_python" type="serial_node.py" name="led_controller" args="$(arg port)" output="screen">
-    <!--<rosparam param="color_sequence">[1, 2, 3, 4]</rosparam>-->
-    <remap from="/cmd_vel" to="$(arg twist)"/>
-  </node>
+  <include file="$(find panther_led_controller)/launch/led_controller.launch">
+    <arg name="twist" value="/joy_teleop/cmd_vel"/>
+  </include>
+    
+  <!-- Launch teloperation -->
+  <include file="$(find panther_control)/launch/teleop.launch" /> 
 
 </launch>
