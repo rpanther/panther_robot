@@ -1,6 +1,6 @@
 # PANTHER
 **Powerful Autonomous eNTity High-End Robot - Code name: Rude**
-##Hardaware repository. All driver packages and installation setup
+## HARDWARE REPOSITORY - All driver packages and installation setup
 
 ![Panther robot](https://github.com/rbonghi/panther_hardware/blob/master/panther-nobg.png)
 
