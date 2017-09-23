@@ -160,12 +160,12 @@ void setup() {
 
   // Reference Parameters http://wiki.ros.org/rosserial/Overview/Parameters
   // Get param gain linear velocity
-  if (!nh.getParam("~k_v", &k_v, 1)) {
+  if (!nh.getParam("~gain/linear", &k_v, 1)) {
     nh.logwarn("Load default k_v = 1");
     k_v = 1;
   }
   // Get param gain angular velocity
-  if (!nh.getParam("~k_w", &k_w, 1)) {
+  if (!nh.getParam("~gain/angular", &k_w, 1)) {
     nh.logwarn("Load default k_w = 1");
     k_w = 1;
   }

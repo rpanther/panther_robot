@@ -1,0 +1,5 @@
+
+# Gain conversion definition 
+gain: {linear:  1.0, angular: 1.0}
+# Color sequence
+colors: {first: 'A'}

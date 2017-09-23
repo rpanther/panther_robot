@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>panther_led_controller</name>
+  <name>panther_audio</name>
   <version>0.0.1</version>
-  <description>The panther_led_controller package</description>
+  <description>The panther_audio package</description>
 
   <maintainer email="raffaello@rnext.it">Raffaello Bonghi</maintainer>
 
@@ -14,11 +14,7 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <build_depend>rosserial_arduino</build_depend>
-  <build_depend>rosserial_client</build_depend>
-
-  <run_depend>rosserial_python</run_depend>
-  <run_depend>rosserial_arduino</run_depend>
+  <run_depend>sound_play</run_depend>
   
 
 </package>

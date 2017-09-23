@@ -28,17 +28,9 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
 <launch>
-  <!-- Set Arduino port -->
-  <arg name="port" default="/dev/ttyACM0" />
-  <arg name="twist" default="/panther_velocity_controller/cmd_vel" />
-  <arg name="led_config" default="$(find panther_led_controller)/config/led.yaml" />
   
-  <!-- Launch Teesny controller -->
-  <node pkg="rosserial_python" type="serial_node.py" name="led_controller" args="$(arg port)" output="screen">
-    <!-- Load default linear and angular velocity gain -->  
-    <rosparam command="load" file="$(arg led_config)" />
-    <!-- Remap twist command topic -->
-    <remap from="/cmd_vel" to="$(arg twist)"/>
+  <!-- Launch Sound play controller -->
+  <node pkg="sound_play" type="soundplay_node.py" name="sound_play">
   </node>
 
 </launch>
