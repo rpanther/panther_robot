@@ -30,7 +30,11 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 <launch>
   
   <!-- Launch Sound play controller -->
-  <node pkg="sound_play" type="soundplay_node.py" name="sound_play">
+  <node pkg="sound_play" type="soundplay_node.py" name="sound_play"/>
+  <!-- Launch joystick bridge -->
+  <node pkg="panther_audio" type="joystick_bridge.py" name="panther_audio" output="screen">
+    <!-- Load configuration buttons -->  
+    <rosparam command="load" file="$(find panther_audio)/config/audio.yaml" />
   </node>
 
 </launch>

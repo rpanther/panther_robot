@@ -1,0 +1,5 @@
+
+# Define led on off button and parameter reference
+led_controller: {button: 7, param: '/LED'}
+# Configuration start/stop and next button
+audio_controller: {start: 5, next: 6}

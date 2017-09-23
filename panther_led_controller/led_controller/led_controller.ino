@@ -116,7 +116,7 @@ int size_colors = 0;
 
 soft_timer_t timer;
 soft_timer_t twist_check;
-
+int controller_status;
 // ------SUBSCRIBER --------//
 
 char tmp_buffer[50];
@@ -170,6 +170,11 @@ void setup() {
     k_w = 1;
   }
 
+  // Load enable/disable effect
+  if (!nh.getParam("~status", &controller_status, 1)) {
+    controller_status = false;
+  }
+
   nh.loginfo("Parameters loaded");
 
   // Initialization swipe line
@@ -221,6 +226,11 @@ void loop() {
   if (soft_timer_run(timer)) {
     // set the LED with the ledState of the variable:
     digitalWrite(LED_BUILTIN, HIGH - digitalRead(LED_BUILTIN)); // blink the led
+  }
+
+  // Load enable/disable effect
+  if (!nh.getParam("~status", &controller_status, 1)) {
+    controller_status = false;
   }
 
   // If any message as received in N time. The swipe reset and wait a new message

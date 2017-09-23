@@ -8,14 +8,17 @@ from sound_play.libsoundplay import SoundClient
 class Button:
     def __init__(self, num):
         self.num = num
+        self.state = False
         self.old_state = False
     
     def update(self, buttons):
-        if buttons[self.num - 1] and not self.old_state:
-            self.old_state = buttons[self.num - 1]
+        self.state = buttons[self.num - 1]
+        if self.state and not self.old_state:
+            self.old_state = self.state
             return True
-        self.old_state = buttons[self.num - 1]
+        self.old_state = self.state
         return False
+
 # Audio controller with play/stop and next song
 class AudioController:
     def __init__(self, rospy, play_stop, next, sound_client, global_path, audiolist):
@@ -44,18 +47,30 @@ class AudioController:
 
 # Definition type of effect
 audio_controller = None
+# Definition start stop LED effect
+led_controller = None
+status = True
 
 def callback(data):
-    #rospy.loginfo(data.buttons)
     global audio_controller
+    global led_controller
+    global status
     # Update audio controller
     audio_controller.update(data.buttons)
-    #rospy.loginfo(rospy.get_caller_id() + "I heard %s", data.data)
+    # Check if start and stop led effect button is pressed
+    if led_controller.update(data.buttons):
+        param = rospy.get_param("~led_controller/param")
+        rospy.set_param(param, status)
+        if status:
+            rospy.loginfo("LED ON")
+        else:
+            rospy.loginfo("LED OFF")
+        status = not status
     
 def joystick_bridge():
     # Initialzie ROS python node
     rospy.init_node('joystick_bridge', anonymous=True)
-    #rospy.loginfo(os.environ['HOME'])
+    # Read Music global path
     global_path = rospy.get_param("~audio_path", os.environ['HOME'] + "/Music")
     # Lists all files in the current directory
     # Selected only the wav files
@@ -69,18 +84,27 @@ def joystick_bridge():
     # Initialize the sound player cliend
     sound_client = SoundClient()
     rospy.sleep(2)
-    # Initialize button controller
     # Launch Joystick reader
     rospy.Subscriber("joy", Joy, callback)
-    # Print start node
-    rospy.loginfo("... %s running!"%rospy.get_name())
     # Initialize audio controller
     global audio_controller
-    audio_controller = AudioController(rospy, 5, 6, sound_client, global_path, audio_files)
-    
+    button_start = rospy.get_param("~audio_controller/start")
+    button_next = rospy.get_param("~audio_controller/next")
+    audio_controller = AudioController(rospy, button_start, button_next, sound_client, global_path, audio_files)
+    rospy.loginfo("* Audio -> Start/Stop[%d] - Next[%d]"%(button_start, button_next))
+    # Inizialize led effect controller
+    global led_controller
+    button_led = rospy.get_param("~led_controller/button")
+    led_controller = Button(button_led)
+    rospy.loginfo("* LED -> ON/OFF[%d] - Param:%s"%(button_led, rospy.get_param("~led_controller/param")))
+    # Print start node
+    rospy.loginfo("... %s running!"%rospy.get_name())
+    # Start Hello robot
     sound_client.playWave(global_path + "/" + 'controller/R2D2-init.wav')
     # spin() simply keeps python from exiting until this node is stopped
     rospy.spin()
+    # Print exit message
+    rospy.loginfo("%s Stopped!"%rospy.get_name())
 
 if __name__ == '__main__':
     joystick_bridge()
