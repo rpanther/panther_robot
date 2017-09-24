@@ -210,7 +210,7 @@ void loop() {
   nh.loginfo("Connected!");
   
   // Wait one second
-  delay(2);
+  delay(5);
   
   // Reference Parameters http://wiki.ros.org/rosserial/Overview/Parameters
   // Get param gain linear velocity

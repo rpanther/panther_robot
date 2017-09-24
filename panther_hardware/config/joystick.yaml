@@ -19,4 +19,6 @@ audio:
     song:
         init: 'controller/R2D2-init.wav'
         exit: 'controller/R2D2-exit.wav'
-    
+say:
+    button: 9
+    text: 'Hello sir, My name is Panther'

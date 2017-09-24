@@ -1,9 +1,13 @@
 #!/usr/bin/env python
 import rospy
 import os
+import netifaces as ni
 from std_msgs.msg import Bool
 from sensor_msgs.msg import Joy
+from sound_play.msg import SoundRequest
 from sound_play.libsoundplay import SoundClient
+import actionlib
+from sound_play.msg import SoundRequestAction
 
 # Button class definition
 class Button:
@@ -28,6 +32,8 @@ class AudioController:
         self.play_stop = Button(play_stop)
         self.next = Button(next)
         self.sound_client = SoundClient()
+        ac = actionlib.SimpleActionClient('sound_play', SoundRequestAction)
+        ac.wait_for_server()
         self.global_path = global_path
         self.audiolist = audiolist
         self.selected = 0
@@ -81,13 +87,23 @@ enable_effect = None
 status = True
 # Publisher LED controller
 pub = None
+# Button voice
+button_voice = None
 
 def callback(data):
     global audio_controller
     global led_controller
     global status
+    global button_voice
     # Update audio controller
     audio_controller.update(data.buttons)
+    # Voice button
+    if button_voice.update(data.buttons) and not status:
+        text = rospy.get_param("~say/text")
+        rospy.loginfo("Voice BUTTON - say: %s"%text)
+        sound = audio_controller.sound_client.voiceSound(text)
+        #sound = audio_controller.sound_client.builtinSound(SoundRequest.NEEDS_PLUGGING)
+        sound.play()
     # Check if start and stop led effect button is pressed
     if enable_effect.update(data.buttons):
         pub.publish(status)
@@ -95,8 +111,9 @@ def callback(data):
             rospy.loginfo("Effects ENABLE")
         else:
             rospy.loginfo("Effects DISABLE")
+        # Update status
         status = not status
-    
+
 def joystick_bridge():
     # Initialzie ROS python node
     rospy.init_node('joystick_bridge', anonymous=True)
@@ -126,12 +143,19 @@ def joystick_bridge():
     status = rospy.get_param("~led/topic")
     rospy.loginfo("* LED -> ON/OFF[%d] - Param:%s"%(button_led, status))
     # Wait load audio controller
-    rospy.sleep(2)
-    # Launch Joystick reader
-    rospy.Subscriber(audio_topic, Joy, callback)
+    #rospy.sleep(2)
+    audio_controller.sound_client.stopAll()
     # Initialize led status controller
     global pub
     pub = rospy.Publisher(status, Bool, queue_size=10)
+    # Voice button
+    global button_voice
+    button_number = rospy.get_param("~say/button")
+    text = rospy.get_param("~say/text")
+    button_voice = Button(button_number)
+    rospy.loginfo("* Voice -> START[%d] - text: %s"%(button_number, text))
+    # Launch Joystick reader
+    rospy.Subscriber(audio_topic, Joy, callback)
     # Print start node
     rospy.loginfo("... %s running!"%rospy.get_name())
     # spin() simply keeps python from exiting until this node is stopped
