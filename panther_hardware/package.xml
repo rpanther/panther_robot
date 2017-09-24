@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>panther_audio</name>
+  <name>panther_hardware</name>
   <version>0.0.1</version>
-  <description>The panther_audio package</description>
+  <description>The panther_hardware package</description>
 
   <maintainer email="raffaello@rnext.it">Raffaello Bonghi</maintainer>
 
@@ -14,6 +14,8 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <build_depend>rospy</build_depend>
+  <run_depend>rospy</run_depend>
   <run_depend>sound_play</run_depend>
   
 

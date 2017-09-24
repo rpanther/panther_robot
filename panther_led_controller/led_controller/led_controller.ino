@@ -45,12 +45,15 @@
 
 // Topic definition
 #define TWIST_SUBSCRIBER_TOPIC "/cmd_vel"
+#define ENABLE_SUBSCRIBER_TOPIC "~status"
 // -------------------------//
 
 // Teensy Reset REFERENCE https://forum.pjrc.com/threads/44857-How-to-Reset-Restart-Teensy-3-5-using-sotware
 #define RESTART_ADDR 0xE000ED0C
 #define READ_RESTART() (*(volatile uint32_t *)RESTART_ADDR)
 #define WRITE_RESTART(val) ((*(volatile uint32_t *)RESTART_ADDR) = (val))
+// reset Board
+// Use ti function to restart the micro WRITE_RESTART(0x5FA0004);
 
 #include <Adafruit_NeoPixel.h>
 #ifdef __AVR__
@@ -62,6 +65,7 @@
 // ROS header
 #include <ros.h>
 #include <geometry_msgs/Twist.h>
+#include <std_msgs/Bool.h>
 #include <std_msgs/ColorRGBA.h>
 
 #define L1_POS             0         //10
@@ -116,7 +120,7 @@ int size_colors = 0;
 
 soft_timer_t timer;
 soft_timer_t twist_check;
-int controller_status;
+bool controller_run = false;
 // ------SUBSCRIBER --------//
 
 char tmp_buffer[50];
@@ -134,8 +138,17 @@ void TwistMessageCb( const geometry_msgs::Twist& msg) {
   nh.logdebug(tmp_buffer);
 }
 
+void EnableMessageCb( const std_msgs::Bool& msg) {
+  // Update status controller
+  controller_run = msg.data;
+  // Send log message information
+  nh.logdebug("Bool status");
+}
+
 // Define the twist subscriber
 ros::Subscriber<geometry_msgs::Twist> sub(TWIST_SUBSCRIBER_TOPIC, &TwistMessageCb );
+
+ros::Subscriber<std_msgs::Bool> enable_status(ENABLE_SUBSCRIBER_TOPIC, &EnableMessageCb );
 
 // --------SETUP ----------//
 
@@ -150,32 +163,8 @@ void setup() {
   // Initialization ROS node
   nh.initNode();
   // Initialization subscriber
-  nh.subscribe(sub);
-  
-  // Wait connection from ROS
-  while (!nh.connected()) {
-    nh.spinOnce();
-  }
-  nh.loginfo("Connected!");
-
-  // Reference Parameters http://wiki.ros.org/rosserial/Overview/Parameters
-  // Get param gain linear velocity
-  if (!nh.getParam("~gain/linear", &k_v, 1)) {
-    nh.logwarn("Load default k_v = 1");
-    k_v = 1;
-  }
-  // Get param gain angular velocity
-  if (!nh.getParam("~gain/angular", &k_w, 1)) {
-    nh.logwarn("Load default k_w = 1");
-    k_w = 1;
-  }
-
-  // Load enable/disable effect
-  if (!nh.getParam("~status", &controller_status, 1)) {
-    controller_status = false;
-  }
-
-  nh.loginfo("Parameters loaded");
+  nh.subscribe(sub);                  // Velocity
+  nh.subscribe(enable_status);        // Enable
 
   // Initialization swipe line
   led_swipe_init(line_swipe_left, &neo_pixel_left, L1_POS, L2_POS, DEFAULT_LINE_LNG, NEOPIXEL_LED_OFF);
@@ -214,24 +203,62 @@ volatile float vel_right_old = vel_right;
 
 void loop() {
 
-  // Check if ROS is connected
-  if (!nh.connected()) {
-    // Clear line
-    led_swipe_reset(line_swipe_left);
-    led_swipe_reset(line_swipe_right);
-    // reset Board
-    WRITE_RESTART(0x5FA0004);
+  // Wait connection from ROS
+  while (!nh.connected()) {
+    nh.spinOnce();
   }
+  nh.loginfo("Connected!");
+  // Wait one second
+  delay(1);
+  
+  // Reference Parameters http://wiki.ros.org/rosserial/Overview/Parameters
+  // Get param gain linear velocity
+  if (!nh.getParam("~gain/linear", &k_v, 1)) {
+    nh.logwarn("Load default k_v = 1");
+    k_v = 1;
+  }
+  // Get param gain angular velocity
+  if (!nh.getParam("~gain/angular", &k_w, 1)) {
+    nh.logwarn("Load default k_w = 1");
+    k_w = 1;
+  }
+  // Get default status
+  int tmp_controller;
+  if (!nh.getParam("~status", &tmp_controller, 1)) {
+    tmp_controller = 0;
+  }
+  // Enable/Disable controller
+  controller_run = (tmp_controller >= 1);
 
-  if (soft_timer_run(timer)) {
-    // set the LED with the ledState of the variable:
-    digitalWrite(LED_BUILTIN, HIGH - digitalRead(LED_BUILTIN)); // blink the led
-  }
+  // Send log message
+  char log_msg[60];
+  memset(log_msg, 0, 60);
+  sprintf(log_msg,"Status [%s] linear:%.3f angular:%.3f", controller_run ? "TRUE" : "FALSE", k_v, k_w);
+  nh.loginfo(log_msg);
 
-  // Load enable/disable effect
-  if (!nh.getParam("~status", &controller_status, 1)) {
-    controller_status = false;
+  nh.loginfo("Parameters loaded");
+
+  while(nh.connected()) {
+    // Blink led status
+    if (soft_timer_run(timer)) {
+      // set the LED with the ledState of the variable:
+      digitalWrite(LED_BUILTIN, HIGH - digitalRead(LED_BUILTIN)); // blink the led
+    }
+    // Launch LED effect loop
+    led_loop();
+    // Spin once ROS
+    nh.spinOnce();
   }
+  // Set LOW the builtin led
+  digitalWrite(LED_BUILTIN, LOW);
+  // Clear led effect
+  led_swipe_reset(line_swipe_left);
+  led_swipe_reset(line_swipe_right);
+}
+
+// -------------------------//
+
+void led_loop() {
 
   // If any message as received in N time. The swipe reset and wait a new message
   if (soft_timer_run(twist_check)) {
@@ -243,10 +270,9 @@ void loop() {
     // stop twist check timer
     soft_timer_stop(twist_check);
   }
-
+  // Convert linear and angular velocity in velocity strip left and right
   vel_left = k_v * line_vel + k_w * line_ang;
   vel_right = k_v * line_vel - k_w * line_ang;
-
   // Update period timer
   if (vel_left != vel_left_old) {
     if (vel_left != 0) {
@@ -266,40 +292,37 @@ void loop() {
     }
     vel_right_old = vel_right;
   }
-  // Spin once ROS
-  nh.spinOnce();
 }
 
-// -------------------------//
+void led_effect(bool controller_run, neo_pixel_swipe_t &line, int &color_idx, float velocity) {
+  // Check the status of the LED controller, if TRUE the led effect running
+  if(controller_run) {
+    // Swipe only with velocity not equal zero
+    if (velocity != 0) {
+      // Launch swipe effect with the color on the list
+      color_idx += led_swipe_run(line, colors[color_idx], velocity);
+      // Update color index
+      if (color_idx >= size_colors) {
+        color_idx = 0;
+      } else if (color_idx < 0) {
+        color_idx = size_colors - 1;
+      }
+    }
+  } else {
+    led_swipe_reset(line);
+  }
+}
 
 /**
    @brief Timer callback to update velocity for neo pixel line left
 */
 void callbackLeft() {
-  if (vel_left != 0) {
-    // Launch swipe effect with the color on the list
-    color_idx_left += led_swipe_run(line_swipe_left, colors[color_idx_left], vel_left);
-    // Update color index
-    if (color_idx_left >= size_colors) {
-      color_idx_left = 0;
-    } else if (color_idx_left < 0) {
-      color_idx_left = size_colors - 1;
-    }
-  }
+  led_effect(controller_run, line_swipe_left, color_idx_left, vel_left);
 }
 /**
    @brief Timer callback to update velocity for neo pixel line right
 */
 void callbackRight() {
-  if (vel_right != 0) {
-    // Launch swipe effect with the color on the list
-    color_idx_right += led_swipe_run(line_swipe_right, colors[color_idx_right], vel_right);
-    // Update color index
-    if (color_idx_right >= size_colors) {
-      color_idx_right = 0;
-    } else if (color_idx_right < 0) {
-      color_idx_right = size_colors - 1;
-    }
-  }
+  led_effect(controller_run, line_swipe_right, color_idx_right, vel_right);
 }
 

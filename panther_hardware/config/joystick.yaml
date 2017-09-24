@@ -1,0 +1,16 @@
+
+# Define led on off button and parameter reference
+led: {enable: 10, topic: '/led_controller/status'}
+# Configuration start/stop and next button
+audio:
+    # Start/Stop button
+    start: 5
+    # Next song
+    next: 6
+    # Enable disable audio controller
+    enable: 10
+    # Set songs
+    song:
+        init: 'controller/R2D2-init.wav'
+        exit: 'controller/R2D2-exit.wav'
+    

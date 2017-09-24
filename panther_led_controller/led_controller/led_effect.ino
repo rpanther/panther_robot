@@ -38,6 +38,17 @@ void led_swipe_reset(neo_pixel_swipe_t &line) {
   line.NEOPixel->show();
 }
 
+void led_swipe_set(neo_pixel_swipe_t &line, uint32_t bg_color) {
+  // reset index
+  line.idx = line.start;
+  // Reset line
+  for (int i = line.start; i < line.stop; ++i) {
+    line.NEOPixel->setPixelColor(i, bg_color);
+  }
+  // This sends the updated pixel color to the hardware.
+  line.NEOPixel->show();
+}
+
 /**
    @brief Swipe led with a short colored line with length lng
    @param pixels Pointer to Adafruit_NeoPixel
