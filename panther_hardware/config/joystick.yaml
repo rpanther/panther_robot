@@ -1,8 +1,14 @@
 
 # Define led on off button and parameter reference
-led: {enable: 10, topic: '/led_controller/status'}
+led:
+    # Enable/Disable button
+    enable: 10
+    # Topic to send enable/disable message
+    topic: '/led_controller/status'
 # Configuration start/stop and next button
 audio:
+    # Topic to read joistick status
+    topic: 'joy'
     # Start/Stop button
     start: 5
     # Next song

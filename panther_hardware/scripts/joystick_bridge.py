@@ -31,7 +31,7 @@ class AudioController:
         self.global_path = global_path
         self.audiolist = audiolist
         self.selected = 0
-        self.enable = True
+        self.enable = False
         self.song_init = ''
         self.song_exit = ''
         # Load configuration audio
@@ -58,11 +58,6 @@ class AudioController:
                 self.sound_client.playWave(self.global_path + "/" + self.song_exit)            
         
     def update(self, buttons):
-        if self.enable_button.update(buttons):
-            # Launch audio start/stop
-            self.init()
-            # update status
-            self.enable = not self.enable
         if self.enable:
             if self.play_stop.update(buttons):
                 self.startAudio()
@@ -73,6 +68,11 @@ class AudioController:
                     self.selected = 0
                 # Start new audio
                 self.startAudio()
+        if self.enable_button.update(buttons):
+            # update status
+            self.enable = not self.enable
+            # Launch audio start/stop
+            self.init()
 
 # Definition type of effect
 audio_controller = None
@@ -116,8 +116,9 @@ def joystick_bridge():
     button_enable = rospy.get_param("~audio/enable")
     button_start = rospy.get_param("~audio/start")
     button_next = rospy.get_param("~audio/next")
+    audio_topic = rospy.get_param("~audio/joy", "joy")
     audio_controller = AudioController(rospy, button_enable, button_start, button_next, global_path, audio_files)
-    rospy.loginfo("* Audio -> Enable[%d] - Start/Stop[%d] - Next[%d]"%(button_enable, button_start, button_next))
+    rospy.loginfo("* Audio -> Enable[%d] - Start/Stop[%d] - Next[%d] - topic:%s"%(button_enable, button_start, button_next, audio_topic))
     # Inizialize led effect controller
     global enable_effect
     button_led = rospy.get_param("~led/enable")
@@ -127,7 +128,7 @@ def joystick_bridge():
     # Wait load audio controller
     rospy.sleep(2)
     # Launch Joystick reader
-    rospy.Subscriber("joy", Joy, callback)
+    rospy.Subscriber(audio_topic, Joy, callback)
     # Initialize led status controller
     global pub
     pub = rospy.Publisher(status, Bool, queue_size=10)

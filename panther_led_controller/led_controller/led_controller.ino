@@ -208,8 +208,9 @@ void loop() {
     nh.spinOnce();
   }
   nh.loginfo("Connected!");
+  
   // Wait one second
-  delay(1);
+  delay(2);
   
   // Reference Parameters http://wiki.ros.org/rosserial/Overview/Parameters
   // Get param gain linear velocity
