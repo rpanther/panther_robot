@@ -2,6 +2,6 @@
 # Default start status
 status: 0
 # Gain conversion definition 
-gain: {linear:  2.0, angular: 0.1}
+gain: {linear:  0.5, angular: 0.1}
 # Color sequence
 colors: {first: 'A'}
