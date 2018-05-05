@@ -5,7 +5,7 @@ project(panther_led_controller)
 # http://wiki.ros.org/rosserial_arduino/Tutorials/CMake
 
 find_package(catkin REQUIRED COMPONENTS 
-    rosserial_arduino 
+#    rosserial_arduino 
     rosserial_client
 )
 
