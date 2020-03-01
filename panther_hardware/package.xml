@@ -1,15 +1,12 @@
 <?xml version="1.0"?>
 <package>
   <name>panther_hardware</name>
-  <version>0.0.1</version>
-  <description>The panther_hardware package</description>
+  <version>1.0.0</version>
+  <description>External hardware controller</description>
 
+  <license>MIT</license>
   <maintainer email="raffaello@rnext.it">Raffaello Bonghi</maintainer>
-
-  <license>BSD-3</license>
-
-  <url type="website">http://rnext.it/panther</url>
-
+  <url type="repository">https://github.com/rbonghi/panther</url>
   <author email="raffaello@rnext.it">Raffaello Bonghi</author>
 
   <buildtool_depend>catkin</buildtool_depend>
