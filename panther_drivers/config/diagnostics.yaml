@@ -1,0 +1,7 @@
+analyzers:
+  computers:
+    type: GenericAnalyzer
+    path: Roboteq
+    contains: [
+      'Roboteq',
+      'joint']
