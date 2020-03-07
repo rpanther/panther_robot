@@ -13,11 +13,14 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <exec_depend>panther_description</exec_depend>
+  <exec_depend>roboteq_control</exec_depend>
   <exec_depend>rplidar_ros</exec_depend>
   <exec_depend>imu_transformer</exec_depend>
   <exec_depend>razor_imu_9dof</exec_depend>
   <exec_depend>sound_play</exec_depend>
+
+  <exec_depend>panther_description</exec_depend>
+  <exec_depend>panther_control</exec_depend>
   <exec_depend>panther_led_controller</exec_depend>
 
 </package>

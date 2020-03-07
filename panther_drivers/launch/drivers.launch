@@ -1,0 +1,95 @@
+<?xml version="1.0"?>
+<!--
+Copyright (C) 2020, Raffaello Bonghi <raffaello@rnext.it>
+All rights reserved
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+1. Redistributions of source code must retain the above copyright 
+   notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+3. Neither the name of the copyright holder nor the names of its 
+   contributors may be used to endorse or promote products derived 
+   from this software without specific prior written permission.
+ 
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND 
+CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, 
+BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS 
+FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, 
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; 
+OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, 
+WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
+OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, 
+EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+<launch>
+    
+    <arg name="namespace"       default="panther" />
+    
+    <arg name="diagnostic"      default="false" />
+    <!-- Drivers -->
+    <arg name="motors"          default="true" />
+    <arg name="zed"             default="true" />
+    <arg name="led"             default="false" />
+    <arg name="joystick"        default="false" />
+    <arg name="scan_processing" default="false" />
+
+    <!-- All nodes are loaded in same namespace 
+         Drivers:
+          - Roboteq
+          - rplidar
+          - razor_imu
+          - audio
+          - ZED
+          - TODO: led_controller
+          This node load hardware diagnostic system
+          - Diagnostic
+     -->
+    <group ns="$(arg namespace)">
+        <!-- Load robot description -->
+        <include file="$(find panther_description)/launch/description.launch" />
+        <!-- Diagnostic -->
+        <group if="$(arg diagnostic)">
+            <include file="$(find panther_drivers)/launch/diagnostic.launch" />
+        </group>
+        <!-- Motors -->
+        <group if="$(arg motors)">
+            <include file="$(find panther_drivers)/launch/driver/roboteq.launch" />
+        </group>
+        <group unless="$(arg motors)">
+            <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" output="screen" />
+        </group>
+        <!-- Jetson-stats -->
+        <node pkg="ros_jetson_stats" type="jetson_stats.py" name="ros_jetson_stats"/>
+        <!-- RP Lidar -->
+        <include file="$(find panther_drivers)/launch/driver/rplidar.launch" />
+        <!-- IMU -->
+        <include file="$(find panther_drivers)/launch/driver/razor_imu.launch" />
+        <!-- Audio controller -->
+        <include file="$(find panther_drivers)/launch/driver/audio.launch" />
+        <!-- ZED camera -->
+        <group if="$(arg zed)">
+            <include file="$(find panther_drivers)/launch/driver/zed_camera.launch">
+                <arg name="camera_name"      value="zed2" />
+                <arg name="camera_model"     value="zed2" />
+                <arg name="node_name"        value="zed" />
+                <arg name="scan_processing"  value="$(arg scan_processing)" />
+            </include>
+        </group>
+        <!-- LED effect controller -->
+        <group if="$(arg led)">
+            <include file="$(find panther_led_controller)/launch/led_controller.launch">
+                <arg name="twist"            value="/panther_velocity_controller/cmd_vel" />
+            </include>
+        </group>
+        <!-- Launch joystick bridge -->
+        <group if="$(arg joystick)">
+            <node pkg="panther_hardware" type="joystick_bridge.py" name="panther_audio" output="screen">
+              <rosparam command="load" file="$(find panther_drivers)/config/joystick.yaml" />
+            </node>
+        </group>
+    </group>
+</launch>

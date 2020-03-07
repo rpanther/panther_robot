@@ -26,23 +26,24 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
 <launch>
-  <!-- Set Lidar port -->
-  <arg name="port" default="/dev/razor-imu" />
+    <!-- Set Lidar port -->
+    <arg name="port" default="/dev/razor-imu" />
 
-  <!-- Launch razor imu node  -->
-  <node pkg="razor_imu_9dof" type="imu_node.py" name="razor_imu" output="screen">
-    <!-- load serial port   -->
-    <param name="port" type="string" value="$(arg port)"/>
-    <!-- load configuration -->
-    <rosparam command="load" file="$(find panther_drivers)/config/razor.yaml" />
-    <!-- Remap imu data     -->
-    <remap from="imu" to="imu/raw"/>
-  </node>
+    <group ns="razor">
+        <!-- Launch razor imu node  -->
+        <node pkg="razor_imu_9dof" type="imu_node.py" name="razor_imu" output="screen">
+            <!-- load serial port   -->
+            <param name="port" type="string" value="$(arg port)"/>
+            <!-- load configuration -->
+            <rosparam command="load" file="$(find panther_drivers)/config/razor.yaml" />
+            <!-- Remap imu data     -->
+            <remap from="imu" to="imu/raw"/>
+        </node>
 
-  <!-- Launch IMU coordinate transform in base link -->
-  <node pkg="imu_transformer" type="imu_transformer_node" name="imu_transformer" output="screen">
-    <remap from="imu_in/data"  to="imu/raw"/>
-    <remap from="imu_out/data" to="imu"/>
-  </node>
-
+        <!-- Launch IMU coordinate transform in base link -->
+        <node pkg="imu_transformer" type="imu_transformer_node" name="imu_transformer" output="screen">
+            <remap from="imu_in/data"  to="imu/raw"/>
+            <remap from="imu_out/data" to="imu"/>
+        </node>
+    </group>
 </launch>
