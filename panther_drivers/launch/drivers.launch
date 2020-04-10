@@ -58,9 +58,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <!-- Motors -->
     <group if="$(arg motors)">
       <include file="$(find roboteq_control)/launch/roboteq.launch">
-        <arg name="port"        default="/dev/roboteq" />
-        <arg name="config"      default="$(find panther_drivers)" />
-        <arg name="respawn"     default="true" />
+        <arg name="port"        value="/dev/roboteq" />
+        <arg name="config"      value="$(find panther_drivers)/config/roboteq.yaml" />
+        <arg name="respawn"     value="true" />
       </include>
     </group>
     <group unless="$(arg motors)">
@@ -69,7 +69,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <!-- Jetson-stats -->
     <node pkg="ros_jetson_stats" type="jetson_stats.py" name="ros_jetson_stats"/>
     <!-- IMU -->
-    <!--<include file="$(find panther_drivers)/launch/driver/razor_imu.launch" />-->
+    <!--<include file="$(find panther_drivers)/launch/driver/razor_imu.launch">
+      <arg name="output"        value="screen" />
+    </include>-->
     <!-- Audio controller -->
     <include file="$(find panther_drivers)/launch/driver/audio.launch" />
     <!-- RP Lidar -->

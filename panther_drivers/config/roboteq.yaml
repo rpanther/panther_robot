@@ -6,11 +6,10 @@ over_voltage_hysteresis: 5.0
 under_voltage_limit: 5.0
 pwm_frequency: 16.0
 # Definition motors
-joint: [left_joint, right_joint]
+joint: [right_joint, left_joint]
 
-#Definition motors
-left_joint:
-  number: 2
+right_joint:
+  number: 1
   ratio: 16.0
   rotation: 1
   stall_detection: 2
@@ -27,8 +26,9 @@ left_joint:
     torque: {Kp: 0.0, Ki: 0.0, Kd: 0.0, integrator_limit: 100, loop_error_detection: 0, position_mode_velocity: 0, turn_min_to_max: 0.0}
     velocity: {Kp: 2.0, Ki: 2.0, Kd: 0.0, integrator_limit: 100, loop_error_detection: 2, position_mode_velocity: 1000, turn_min_to_max: 25.0}
 
-right_joint:
-  number: 1
+#Definition motors
+left_joint:
+  number: 2
   ratio: 16.0
   rotation: 1
   stall_detection: 2

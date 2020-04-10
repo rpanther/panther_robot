@@ -27,7 +27,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
 <launch>
     <!-- Set Lidar port -->
-    <arg name="port" default="/dev/razor-imu" />
+    <arg name="port"   default="/dev/razor-imu" />
+    <arg name="output" default="screen" />
 
     <group ns="razor">
         <!-- Launch razor imu node  -->
@@ -41,7 +42,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         </node>
 
         <!-- Launch IMU coordinate transform in base link -->
-        <node pkg="imu_transformer" type="imu_transformer_node" name="imu_transformer" output="screen">
+        <node pkg="imu_transformer" type="imu_transformer_node" name="imu_transformer" output="$(arg output)">
             <remap from="imu_in/data"  to="imu/raw"/>
             <remap from="imu_out/data" to="imu"/>
         </node>
