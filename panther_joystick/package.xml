@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>panther_joystick</name>
+  <version>1.0.0</version>
+  <description>Panther jostick extra commands to manage led, audio and roboteq controller.</description>
+
+  <maintainer email="raffaello@rnext.it">Raffaello Bonghi</maintainer>
+  <license>MIT</license>
+  
+  <url type="website">https://rnext.it/panther</url>
+  <url type="repository">https://github.com/rpanther/panther_hardware</url>
+  <author email="raffaello@rnext.it">Raffaello Bonghi</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+</package>
