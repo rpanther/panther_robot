@@ -12,5 +12,7 @@
   <author email="raffaello@rnext.it">Raffaello Bonghi</author>
 
   <buildtool_depend>catkin</buildtool_depend>
+  
+  <exec_depend>joy</exec_depend>
 
 </package>

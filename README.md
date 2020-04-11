@@ -13,6 +13,7 @@ Read more about [Panther]
   - Roboteq [SDC2130]
   - RPLidar [A2]
   - Stereolabs [ZED2]
+  - Razor IMU [IMU]
 * **panther_joystick** - Interface to enable feature for panther
 * **panther_led_controller** - Led controller for panther robot
 
@@ -25,3 +26,4 @@ Read more about [Panther]
 [A2]: https://www.slamtec.com/en/Lidar/A2
 [ROS]: http://www.ros.org/
 [DCDC-USB]: https://www.mini-box.com/DCDC-USB?sc=8&category=981
+[IMU]: http://wiki.ros.org/razor_imu_9dof

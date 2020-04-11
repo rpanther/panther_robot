@@ -1,0 +1,10 @@
+# Interval update jetson_stats in [ms]
+interval: 2000
+# Rate node diagnostic update is [second]
+rate: 5
+# Set status levels
+level:
+  ok: 20
+  warning: 60
+  error: 80
+

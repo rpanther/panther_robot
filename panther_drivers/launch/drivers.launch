@@ -34,13 +34,13 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   <arg name="lidar"           default="true" />
   <arg name="zed"             default="true" />
   <arg name="led"             default="false" />
-  <arg name="joystick"        default="false" />
+  <arg name="joystick"        default="true" />
   <arg name="scan_processing" default="false" />
 
   <!-- Output
-       - screen
-       - log
-      -->
+        - screen
+        - log
+       -->
   <arg name="output"          default="log" />
 
   <!-- All nodes are loaded in same namespace 
@@ -48,12 +48,14 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         - Roboteq
         - rplidar
         - razor_imu
+        - jetson_stats
         - audio
         - ZED
         - TODO: led_controller
+        - joystick
         This node load hardware diagnostic system
         - Diagnostic
-   -->
+       -->
   <group ns="$(arg namespace)">
     <!-- Load robot description -->
     <include file="$(find panther_description)/launch/description.launch" />
@@ -74,7 +76,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
       <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" output="$(arg output)" />
     </group>
     <!-- Jetson-stats -->
-    <node pkg="ros_jetson_stats" type="jetson_stats.py" name="ros_jetson_stats"/>
+    <node pkg="ros_jetson_stats" type="jetson_stats.py" name="ros_jetson_stats">
+      <rosparam command="load" file="$(find panther_drivers)/config/jetson_stats.yaml" />
+    </node>
     <!-- IMU -->
     <include file="$(find panther_drivers)/launch/driver/razor_imu.launch">
       <arg name="output"        value="$(arg output)" />
@@ -106,11 +110,11 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <!-- Launch joystick bridge to control:
           - sound
           - leds
-        -->
+         -->
     <group if="$(arg joystick)">
-      <node pkg="panther_hardware" type="joystick_bridge.py" name="panther_audio" output="screen">
-        <rosparam command="load" file="$(find panther_drivers)/config/joystick.yaml" />
-      </node>
+      <include file="$(find panther_joystick)/launch/joystick.launch">
+        <arg name="output"        value="$(arg output)" />
+      </include>
     </group>
   </group>
 </launch>

@@ -21,6 +21,7 @@
 
   <exec_depend>panther_description</exec_depend>
   <exec_depend>panther_control</exec_depend>
+  <exec_depend>panther_joystick</exec_depend>
   <exec_depend>panther_led_controller</exec_depend>
 
 </package>
