@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(panther_joystick)
 
-find_package(catkin REQUIRED COMPONENTS rospy)
+find_package(catkin REQUIRED COMPONENTS rospy sound_play)
 
 catkin_python_setup()
 

@@ -32,16 +32,32 @@ class Button:
     """
     Button class definition
     """
+
+    class ButtonException(Exception):
+        pass
+
     def __init__(self, num):
         self.num = num
-        self.state = False
-        self.old_state = False
+        self._state = False
+        self._old_state = False
+        self.status = "release"
     
     def update(self, buttons):
-        self.state = buttons[self.num - 1]
-        if self.state and not self.old_state:
-            self.old_state = self.state
-            return True
-        self.old_state = self.state
-        return False
+        self.status = "release"
+        # Read button
+        if self.num - 1 > len(buttons):
+            raise Button.ButtonException("Button not in list")
+        # Read button
+        self._state = buttons[self.num - 1]
+        # Check edge
+        if self._state and not self._old_state:
+            self.status = "pressed"
+        # Update status
+        self._old_state = self._state
+    
+    def __nonzero__(self):
+        return True if self.status == "pressed" else False
+
+    def __str__(self):
+        return str(self.num)
 # EOF

@@ -27,69 +27,123 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import os
 # ROS libraries
+import rospy
 import actionlib
+from sensor_msgs.msg import Joy
 from sound_play.libsoundplay import SoundClient
 from sound_play.msg import SoundRequestAction
 # buttons
 from button import Button
 
 
+def info_song(song, name):
+    if os.path.isfile(song):
+        rospy.loginfo("Song {name}: {song}".format(name=name, song=song))
+    else:
+        rospy.logwarn("Song {name} not defined".format(name=name))
+
+
 class AudioController:
     """
     Audio controller with play/stop and next song
     """
-    def __init__(self, rospy, enable, play_stop, next, global_path, audiolist):
-        self.rospy = rospy
-        self.enable_button = Button(enable)
-        self.play_stop = Button(play_stop)
-        self.next = Button(next)
-        self.sound_client = SoundClient()
-        ac = actionlib.SimpleActionClient('sound_play', SoundRequestAction)
-        ac.wait_for_server()
-        self.global_path = global_path
-        self.audiolist = audiolist
-        self.selected = 0
+    def __init__(self, joy_topic, sound_client="sound_play", audio="audio", speech="speech", path=os.environ['HOME'] + "/Music"):
+        self.ntrack = 0
+        self.nMessage = 0
         self.enable = False
-        self.song_init = ''
-        self.song_exit = ''
-        # Load configuration audio
-        if self.rospy.has_param('~audio/song/init'):
-            self.song_init = self.rospy.get_param("~audio/song/init")
-        if self.rospy.has_param('~audio/song/exit'):
-            self.song_exit = self.rospy.get_param("~audio/song/exit")
-        self.rospy.loginfo("Init:%s - Exit:%s"%(self.song_init, self.song_exit))
-        
-                
-    def startAudio(self):
-        self.rospy.loginfo("Play %s"%self.audiolist[self.selected])
-        self.sound_client.playWave(self.global_path + "/" + self.audiolist[self.selected])
-        
-    def init(self):
-        #self.rospy.loginfo("Sound controller status[%d]"%self.enable)
-        if self.enable:
-            if self.song_init != '':
-                # Start Hello robot
-                self.sound_client.playWave(self.global_path + "/" + self.song_init)
+        # Load music buttons
+        self.button_enable = Button(rospy.get_param("~{audio}/enable".format(audio=audio), 0))
+        self.play_stop = Button(rospy.get_param("~{audio}/start".format(audio=audio), 1))
+        self.next_song = Button(rospy.get_param("~{audio}/next".format(audio=audio), 2))
+        rospy.loginfo("[{enable}] Enable - [{start}] Start/Stop - [{next}] Next".format(enable=self.button_enable,
+                                                                                        start=self.play_stop,
+                                                                                        next=self.next_song))
+        # Load speech button
+        self.button_speech = Button(rospy.get_param("~{speech}/button".format(speech=speech), 3))
+        rospy.loginfo("[{button}] speech".format(button=self.button_speech))
+        # Load music
+        path = rospy.get_param("~{audio}/path".format(audio=audio), path)
+        # Lists all files in the current directory
+        # Selected only the wav files
+        self.audiolist = ["{path}/{song}".format(path=path, song=item) for item in os.listdir(path) if item.endswith('.wav')]
+        if self.audiolist:
+            rospy.loginfo("Audio loaded from {path}: ".format(path=path))
+            for idx, item in enumerate(self.audiolist):
+                rospy.loginfo(" {idx}. {item}".format(idx=idx, item=os.path.basename(item)))
         else:
-            if self.song_exit != '':
-                # Start Exit robot
-                self.sound_client.playWave(self.global_path + "/" + self.song_exit)            
-        
-    def update(self, buttons):
-        if self.enable:
-            if self.play_stop.update(buttons):
-                self.startAudio()
-            if self.next.update(buttons):
-                # Increase counter
-                self.selected += 1
-                if self.selected >= len(self.audiolist):
-                    self.selected = 0
-                # Start new audio
-                self.startAudio()
-        if self.enable_button.update(buttons):
+            rospy.logwarn("Music list in {path} empty".format(path=path))
+        # Load init and exit songs
+        song_init = rospy.get_param("~{audio}/song/init".format(audio=audio), "")
+        self.song_init = "{path}/{song}".format(path=path, song=song_init) 
+        info_song(self.song_init, "init")
+        song_exit = rospy.get_param("~{audio}/song/exit".format(audio=audio), "")
+        self.song_exit = "{path}/{song}".format(path=path, song=song_exit) 
+        info_song(self.song_exit, "exit")
+        # Load texts
+        self.texts = rospy.get_param("~{speech}/text".format(speech=speech), [])
+        if self.texts:
+            rospy.loginfo("Texts in list: ")
+            for idx, text in enumerate(self.texts):
+                rospy.loginfo(" {idx}. {text}".format(idx=idx, text=text))
+        else:
+            rospy.loginfo("No texts in list!")
+        # Enable sound client and wait server
+        self.sound_client = SoundClient()
+        ac = actionlib.SimpleActionClient(sound_client, SoundRequestAction)
+        # Print start node
+        rospy.loginfo("Waiting {client} ...".format(client=sound_client))
+        ac.wait_for_server()
+        # Launch Joystick reader
+        rospy.Subscriber(joy_topic, Joy, self.joy_callback)
+        # Print start node
+        rospy.loginfo("... {client} connected!".format(client=sound_client))
+        # Stop all other sounds
+        self.sound_client.stopAll()
+
+    def _startAudio(self, song):
+        if os.path.isfile(self.song_init):
+            rospy.loginfo("Play {song}".format(song=song))
+            self.sound_client.playWave(song)
+
+    def joy_callback(self, data):
+        # Update status buttons
+        self.play_stop.update(data.buttons)
+        self.button_enable.update(data.buttons)
+        self.next_song.update(data.buttons)
+        self.button_speech.update(data.buttons)
+        # Check status button
+        if self.button_enable:
             # update status
             self.enable = not self.enable
             # Launch audio start/stop
-            self.init()
+            if self.enable:
+                rospy.loginfo("Audio enabled")
+                self._startAudio(self.song_init)
+            else:
+                rospy.loginfo("Audio Disabled")
+                self._startAudio(self.song_exit)
+        # Player control
+        if self.enable:
+            # Check play/stop
+            if self.play_stop:
+                self._startAudio(self.audiolist[self.ntrack])
+                return
+            # Check next song
+            if self.next_song:
+                self.ntrack += 1
+                if self.ntrack >= len(self.audiolist):
+                    self.ntrack = 0
+                # Start a new audio
+                self._startAudio(self.audiolist[self.ntrack])
+                return
+            # Start speech
+            if self.button_speech:
+                text = self.texts[self.nMessage]
+                rospy.loginfo("speech: {text}".format(text=text))
+                # Send voice sound
+                sound = self.sound_client.voiceSound(text)
+                # sound = self.sound_client.builtinSound(SoundRequest.NEEDS_PLUGGING)
+                sound.play()
 # EOF

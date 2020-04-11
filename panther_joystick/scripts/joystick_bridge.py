@@ -39,30 +39,16 @@ from sound_play.msg import SoundRequest
 from button import Button
 from audio_controller import AudioController
 
-# Definition type of effect
-audio_controller = None
 # Definition start stop LED effect
 enable_effect = None
 status = True
 # Publisher LED controller
 pub = None
-# Button voice
-button_voice = None
 
 
-def callback(data):
-    global audio_controller
+def joy_callback(data):
+    #global audio_controller
     global status
-    global button_voice
-    # Update audio controller
-    audio_controller.update(data.buttons)
-    # Voice button
-    if button_voice.update(data.buttons) and not status:
-        text = rospy.get_param("~say/text")
-        rospy.loginfo("Voice BUTTON - say: %s"%text)
-        sound = audio_controller.sound_client.voiceSound(text)
-        #sound = audio_controller.sound_client.builtinSound(SoundRequest.NEEDS_PLUGGING)
-        sound.play()
     # Check if start and stop led effect button is pressed
     if enable_effect.update(data.buttons):
         pub.publish(status)
@@ -74,47 +60,20 @@ def callback(data):
         status = not status
 
 def joystick_bridge():
-    # Initialzie ROS python node
-    rospy.init_node('joystick_bridge', anonymous=True)
-    # Read Music global path
-    global_path = rospy.get_param("~audio_path", os.environ['HOME'] + "/Music")
-    # Lists all files in the current directory
-    # Selected only the wav files
-    audio_files = [item for item in os.listdir(global_path) if item.endswith('.wav')]
-    rospy.loginfo("Audio loaded from %s:"%global_path)
-    counter = 1
-    for item in audio_files:
-        rospy.loginfo(" %d. %s"%(counter, item))
-        counter += 1
-    rospy.loginfo("Wait %s load audio controller..."%rospy.get_name())
-    # Initialize audio controller
-    global audio_controller
-    button_enable = rospy.get_param("~audio/enable")
-    button_start = rospy.get_param("~audio/start")
-    button_next = rospy.get_param("~audio/next")
-    audio_topic = rospy.get_param("~audio/joy", "joy")
-    audio_controller = AudioController(rospy, button_enable, button_start, button_next, global_path, audio_files)
-    rospy.loginfo("* Audio -> Enable[%d] - Start/Stop[%d] - Next[%d] - topic:%s"%(button_enable, button_start, button_next, audio_topic))
+    joy_topic = rospy.get_param("~joy", "joy")
     # Inizialize led effect controller
     global enable_effect
     button_led = rospy.get_param("~led/enable")
     enable_effect = Button(button_led)
     status = rospy.get_param("~led/topic")
     rospy.loginfo("* LED -> ON/OFF[%d] - Param:%s"%(button_led, status))
-    # Wait load audio controller
-    #rospy.sleep(2)
-    audio_controller.sound_client.stopAll()
+    # Initialize audio controller
+    audio_controller = AudioController(joy_topic)
     # Initialize led status controller
     global pub
     pub = rospy.Publisher(status, Bool, queue_size=10)
-    # Voice button
-    global button_voice
-    button_number = rospy.get_param("~say/button")
-    text = rospy.get_param("~say/text")
-    button_voice = Button(button_number)
-    rospy.loginfo("* Voice -> START[%d] - text: %s"%(button_number, text))
     # Launch Joystick reader
-    rospy.Subscriber(audio_topic, Joy, callback)
+    # rospy.Subscriber(joy_topic, Joy, joy_callback)
     # Print start node
     rospy.loginfo("... %s running!"%rospy.get_name())
     # spin() simply keeps python from exiting until this node is stopped
@@ -124,6 +83,14 @@ def joystick_bridge():
 
 
 if __name__ == '__main__':
-    joystick_bridge()
+    try:
+        # Initialzie ROS python node
+        rospy.init_node('joystick_bridge', anonymous=True)
+        # Start joystick bridge
+        joystick_bridge()
+    except rospy.ROSInterruptException:
+        pass
+    except KeyboardInterrupt:
+        pass
 # EOF
 
