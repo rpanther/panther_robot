@@ -13,6 +13,8 @@
 
   <buildtool_depend>catkin</buildtool_depend>
   
+  <depend>rospy</depend>
+  <depend>sound_play</depend>
   <exec_depend>joy</exec_depend>
 
 </package>
