@@ -139,15 +139,18 @@ class AudioController:
         if self.enable:
             # Check play/stop
             if self.play_stop:
-                self._startAudio(self.audiolist[self.ntrack])
+                if self.ntrack < len(self.audiolist):
+                    self._startAudio(self.audiolist[self.ntrack])
                 return
             # Check next song
             if self.next_song:
+                # Update counter
                 self.ntrack += 1
                 if self.ntrack >= len(self.audiolist):
                     self.ntrack = 0
                 # Start a new audio
-                self._startAudio(self.audiolist[self.ntrack])
+                if self.ntrack < len(self.audiolist):
+                    self._startAudio(self.audiolist[self.ntrack])
                 return
             # Start speech
             if self.button_speech:
