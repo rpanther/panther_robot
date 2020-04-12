@@ -45,10 +45,10 @@ class Button:
     def update(self, buttons):
         self.status = "release"
         # Read button
-        if self.num - 1 > len(buttons):
+        if self.num >= len(buttons):
             raise Button.ButtonException("Button not in list")
         # Read button
-        self._state = buttons[self.num - 1]
+        self._state = buttons[self.num]
         # Check edge
         if self._state and not self._old_state:
             self.status = "pressed"

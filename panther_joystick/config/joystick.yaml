@@ -6,17 +6,23 @@ buttons:
     # Define led on off button and parameter reference
     led:
         # Enable/Disable button
-        button: 10
+        button: 7
         # Topic to send enable/disable message
         topic: 'led_controller/status'
+    # Define emergency button for Roboteq controller
+    emergency:
+        # Enable/Disable button
+        button: 3
+        # Topic to send enable/disable message
+        topic: 'roboteq/emergency_stop'
 # Configuration start/stop and next button
 audio:
     # Enable disable audio controller
-    enable: 10
+    enable: 7
     # Start/Stop button
-    start: 5
+    start: 4
     # Next song
-    next: 6
+    next: 5
     # Set songs
     song:
         init: 'controller/R2D2-init.wav'
@@ -24,6 +30,6 @@ audio:
 # Text to speech
 speech:
     # Button text
-    button: 9
+    button: 6
     # List texts to speech
     text: ['Hello sir, My name is Panther']
