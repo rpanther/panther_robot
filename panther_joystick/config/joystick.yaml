@@ -1,24 +1,29 @@
 
 # Topic to read joistick status
 joy: 'joy'
-# Define led on off button and parameter reference
-led:
-    # Enable/Disable button
-    enable: 10
-    # Topic to send enable/disable message
-    topic: 'led_controller/status'
+# Buttons list manager
+buttons:
+    # Define led on off button and parameter reference
+    led:
+        # Enable/Disable button
+        button: 10
+        # Topic to send enable/disable message
+        topic: 'led_controller/status'
 # Configuration start/stop and next button
 audio:
+    # Enable disable audio controller
+    enable: 10
     # Start/Stop button
     start: 5
     # Next song
     next: 6
-    # Enable disable audio controller
-    enable: 10
     # Set songs
     song:
         init: 'controller/R2D2-init.wav'
         exit: 'controller/R2D2-exit.wav'
+# Text to speech
 speech:
+    # Button text
     button: 9
+    # List texts to speech
     text: ['Hello sir, My name is Panther']

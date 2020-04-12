@@ -35,7 +35,7 @@ from sensor_msgs.msg import Joy
 from sound_play.libsoundplay import SoundClient
 from sound_play.msg import SoundRequestAction
 # buttons
-from button import Button
+from buttons import Button
 
 
 def info_song(song, name):
@@ -49,22 +49,25 @@ class AudioController:
     """
     Audio controller with play/stop and next song
     """
-    def __init__(self, joy_topic, sound_client="sound_play", audio="audio", speech="speech", path=os.environ['HOME'] + "/Music"):
+    def __init__(self, joy_topic, sound_client="sound_play", audio="audio", speech="speech"):
         self.ntrack = 0
         self.nMessage = 0
         self.enable = False
+        self.joy_topic = joy_topic
+        self.sound_client_name = sound_client
         # Load music buttons
         self.button_enable = Button(rospy.get_param("~{audio}/enable".format(audio=audio), 0))
         self.play_stop = Button(rospy.get_param("~{audio}/start".format(audio=audio), 1))
         self.next_song = Button(rospy.get_param("~{audio}/next".format(audio=audio), 2))
-        rospy.loginfo("[{enable}] Enable - [{start}] Start/Stop - [{next}] Next".format(enable=self.button_enable,
-                                                                                        start=self.play_stop,
-                                                                                        next=self.next_song))
+        rospy.loginfo("Audio controller:")
+        rospy.loginfo(" [{enable}] Enable - [{start}] Start/Stop - [{next}] Next".format(enable=self.button_enable,
+                                                                                         start=self.play_stop,
+                                                                                         next=self.next_song))
         # Load speech button
         self.button_speech = Button(rospy.get_param("~{speech}/button".format(speech=speech), 3))
-        rospy.loginfo("[{button}] speech".format(button=self.button_speech))
+        rospy.loginfo(" [{button}] speech".format(button=self.button_speech))
         # Load music
-        path = rospy.get_param("~{audio}/path".format(audio=audio), path)
+        path = rospy.get_param("~{audio}/path".format(audio=audio), "{home}/Music".format(home=os.environ['HOME']))
         # Lists all files in the current directory
         # Selected only the wav files
         self.audiolist = ["{path}/{song}".format(path=path, song=item) for item in os.listdir(path) if item.endswith('.wav')]
@@ -91,14 +94,16 @@ class AudioController:
             rospy.loginfo("No texts in list!")
         # Enable sound client and wait server
         self.sound_client = SoundClient()
-        ac = actionlib.SimpleActionClient(sound_client, SoundRequestAction)
+
+    def start(self):
+        ac = actionlib.SimpleActionClient(self.sound_client_name, SoundRequestAction)
         # Print start node
-        rospy.loginfo("Waiting {client} ...".format(client=sound_client))
+        rospy.loginfo("Waiting {client} ...".format(client=self.sound_client_name))
         ac.wait_for_server()
         # Launch Joystick reader
-        rospy.Subscriber(joy_topic, Joy, self.joy_callback)
+        rospy.Subscriber(self.joy_topic, Joy, self.joy_callback)
         # Print start node
-        rospy.loginfo("... {client} connected!".format(client=sound_client))
+        rospy.loginfo("... {client} connected!".format(client=self.sound_client_name))
         # Stop all other sounds
         self.sound_client.stopAll()
 
@@ -142,6 +147,10 @@ class AudioController:
             if self.button_speech:
                 text = self.texts[self.nMessage]
                 rospy.loginfo("speech: {text}".format(text=text))
+                # Counter update
+                self.nMessage += 1
+                if self.nMessage >= len(self.texts):
+                    self.nMessage = 0
                 # Send voice sound
                 sound = self.sound_client.voiceSound(text)
                 # sound = self.sound_client.builtinSound(SoundRequest.NEEDS_PLUGGING)

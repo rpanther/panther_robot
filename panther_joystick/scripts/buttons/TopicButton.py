@@ -28,36 +28,31 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
 # ROS libraries
 import rospy
-# Local imports
-from buttons import ButtonManager
-from audio_controller import AudioController
+from std_msgs.msg import Bool
+# buttons
+from button import Button
 
 
-def joystick_bridge():
-    joy_topic = rospy.get_param("~joy", "joy")
-    # Run button manager
-    ButtonManager(joy_topic)
-    # Initialize audio controller
-    audio = AudioController(joy_topic)
-    audio.start()
-    # Rospy spin 
-    rospy.spin()
-    # Print exit message
-    rospy.loginfo("{node} stop".format(node=rospy.get_name()))
+class TopicButton:
+    """
+    Convert a button pressed to bolean topic
+    """
+    def __init__(self, num, topic):
+        self.status = True
+        # Load button reader
+        self.button = Button(num)
+        # Load topic output
+        self.pub = rospy.Publisher(topic, Bool, queue_size=10)
 
-
-if __name__ == '__main__':
-    try:
-        # Initialzie ROS python node
-        rospy.init_node('joystick_bridge', anonymous=True)
-        # Start joystick bridge
-        joystick_bridge()
-    except rospy.ROSInterruptException:
-        pass
-    except KeyboardInterrupt:
-        pass
+    def update(self, buttons):
+        # Update status button
+        self.button.update(buttons)
+        # publish if pressed
+        if self.button:
+            rospy.logdebug("[{button}] {status}".format(button=self.button, status=self.status))
+            self.pub.publish(self.status)
+            # Update status
+            self.status = not self.status
 # EOF
-

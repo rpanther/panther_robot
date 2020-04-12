@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 # Copyright (C) 2020, Raffaello Bonghi <raffaello@rnext.it>
 # All rights reserved
@@ -28,36 +27,38 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
 # ROS libraries
 import rospy
-# Local imports
-from buttons import ButtonManager
-from audio_controller import AudioController
+from sensor_msgs.msg import Joy
+# Topic manager
+from .TopicButton import TopicButton
 
 
-def joystick_bridge():
-    joy_topic = rospy.get_param("~joy", "joy")
-    # Run button manager
-    ButtonManager(joy_topic)
-    # Initialize audio controller
-    audio = AudioController(joy_topic)
-    audio.start()
-    # Rospy spin 
-    rospy.spin()
-    # Print exit message
-    rospy.loginfo("{node} stop".format(node=rospy.get_name()))
+class ButtonManager:
+    """
+    Read status button and for each button pressed publish a message
+    """
+    def __init__(self, joy_topic, name="buttons"):
+        self.buttons = {}
+        # Get list of buttons
+        buttons = rospy.get_param("~{name}".format(name=name), {})
+        # Load buttons
+        if buttons:
+            rospy.loginfo("Buttons list:")
+        for name, config in buttons.items():
+            if 'topic' not in config or 'button' not in config:
+                rospy.logwarn("Check {name} button (Miss topic or button)".format(name=name))
+                continue
+            topic = config['topic']
+            button = config['button']
+            rospy.loginfo(" [{button}] {name}. {topic}".format(button=button, name=name, topic=topic))
+            # Add button in list
+            self.buttons[name] = TopicButton(button, topic)
+        # Launch Joystick reader
+        rospy.Subscriber(joy_topic, Joy, self.joy_callback)
 
-
-if __name__ == '__main__':
-    try:
-        # Initialzie ROS python node
-        rospy.init_node('joystick_bridge', anonymous=True)
-        # Start joystick bridge
-        joystick_bridge()
-    except rospy.ROSInterruptException:
-        pass
-    except KeyboardInterrupt:
-        pass
+    def joy_callback(self, data):
+        # Update status buttons
+        for button in self.buttons.values():
+            button.update(data.buttons)
 # EOF
-
