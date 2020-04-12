@@ -39,8 +39,8 @@ class TopicButton:
     """
     Convert a button pressed to bolean topic
     """
-    def __init__(self, num, topic):
-        self.status = True
+    def __init__(self, num, topic, status=True):
+        self.status = status
         # Load button reader
         self.button = Button(num)
         # Load topic output

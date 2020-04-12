@@ -51,9 +51,10 @@ class ButtonManager:
                 continue
             topic = config['topic']
             button = config['button']
-            rospy.loginfo(" [{button}] {name}. {topic}".format(button=button, name=name, topic=topic))
+            status = config.get('status', True)
+            rospy.loginfo(" [{button}] {name}. topic={topic} - status={status}".format(button=button, name=name, topic=topic, status=status))
             # Add button in list
-            self.buttons[name] = TopicButton(button, topic)
+            self.buttons[name] = TopicButton(button, topic, status=status)
         # Launch Joystick reader
         rospy.Subscriber(joy_topic, Joy, self.joy_callback)
 
