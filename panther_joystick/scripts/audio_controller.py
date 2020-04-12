@@ -31,6 +31,7 @@ import os
 # ROS libraries
 import rospy
 import actionlib
+from actionlib_msgs.msg import GoalStatus
 from sensor_msgs.msg import Joy
 from sound_play.libsoundplay import SoundClient
 from sound_play.msg import SoundRequestAction
@@ -94,23 +95,28 @@ class AudioController:
             rospy.loginfo("No texts in list!")
         # Enable sound client and wait server
         self.sound_client = SoundClient()
-
-    def start(self):
-        ac = actionlib.SimpleActionClient(self.sound_client_name, SoundRequestAction)
-        # Print start node
-        rospy.loginfo("Waiting {client} ...".format(client=self.sound_client_name))
-        ac.wait_for_server()
+        self.ac = actionlib.SimpleActionClient(self.sound_client_name, SoundRequestAction)
+        self.active = False
         # Launch Joystick reader
         rospy.Subscriber(self.joy_topic, Joy, self.joy_callback)
+
+    def start(self, timeout=rospy.Duration()):
+        # Print start node
+        rospy.loginfo("Waiting {client} ...".format(client=self.sound_client_name))
+        self.ac.wait_for_server(timeout)
+        self.active = True
         # Print start node
         rospy.loginfo("... {client} connected!".format(client=self.sound_client_name))
         # Stop all other sounds
         self.sound_client.stopAll()
 
     def _startAudio(self, song):
-        if os.path.isfile(self.song_init):
-            rospy.loginfo("Play {song}".format(song=song))
-            self.sound_client.playWave(song)
+        if os.path.isfile(song):
+            if self.active:
+                rospy.loginfo("Play {song}".format(song=song))
+                self.sound_client.playWave(song)
+            else:
+                rospy.logerr("[{server}] Server".format(server=self.active))
 
     def joy_callback(self, data):
         # Update status buttons

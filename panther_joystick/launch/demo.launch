@@ -30,7 +30,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   <!-- Launch teloperation -->
   <include file="$(find panther_control)/launch/teleop.launch" />
   <!-- Audio -->
-  <node pkg="sound_play" type="soundplay_node.py" name="sound_play" />
+  <!--<node pkg="sound_play" type="soundplay_node.py" name="sound_play" />-->
 
   <!-- Launch panther joystick bridge -->
   <include file="$(find panther_joystick)/launch/joystick.launch">
