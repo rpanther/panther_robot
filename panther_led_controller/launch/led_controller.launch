@@ -28,15 +28,19 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 <launch>
   <!-- Set Arduino port -->
   <arg name="port" default="/dev/teensy" />
-  <arg name="twist" default="/panther_velocity_controller/cmd_vel" />
+  <arg name="twist" default="velocity_controller/cmd_vel" />
   <arg name="led_config" default="$(find panther_led_controller)/config/led.yaml" />
-  
+  <!-- Output
+        - screen
+        - log
+       -->
+  <arg name="output"          default="log" />
+
   <!-- Launch Teesny controller -->
-  <node pkg="rosserial_python" type="serial_node.py" name="led_controller" args="$(arg port)" output="screen">
+  <node pkg="rosserial_python" type="serial_node.py" name="led_controller" args="$(arg port)" output="$(arg output)">
     <!-- Load default linear and angular velocity gain -->  
     <rosparam command="load" file="$(arg led_config)" />
     <!-- Remap twist command topic -->
     <remap from="/cmd_vel" to="$(arg twist)"/>
   </node>
-
 </launch>

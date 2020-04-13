@@ -1,11 +1,9 @@
 <?xml version="1.0"?>
 <!--
-Copyright (C) 2017, Raffaello Bonghi <raffaello@rnext.it>
+Copyright (C) 2020, Raffaello Bonghi <raffaello@rnext.it>
 All rights reserved
-
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
-
 1. Redistributions of source code must retain the above copyright 
    notice, this list of conditions and the following disclaimer.
 2. Redistributions in binary form must reproduce the above copyright
@@ -31,10 +29,15 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   
   <!-- Launch Teesny controller -->
   <include file="$(find panther_led_controller)/launch/led_controller.launch">
-    <arg name="twist" value="/joy_teleop/cmd_vel"/>
+    <arg name="output"     value="screen" />
   </include>
     
   <!-- Launch teloperation -->
-  <include file="$(find panther_control)/launch/teleop.launch" /> 
+  <include file="$(find panther_control)/launch/teleop.launch" />
+  
+  <!-- Launch panther joystick bridge -->
+  <include file="$(find panther_joystick)/launch/joystick.launch">
+    <arg name="output"     value="screen" />
+  </include>
 
 </launch>

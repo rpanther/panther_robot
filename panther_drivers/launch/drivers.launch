@@ -33,7 +33,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   <arg name="motors"          default="true" />
   <arg name="lidar"           default="true" />
   <arg name="zed"             default="true" />
-  <arg name="led"             default="false" />
+  <arg name="led"             default="true" />
   <arg name="joystick"        default="true" />
   <arg name="scan_processing" default="false" />
 
@@ -104,7 +104,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <!-- LED effect controller -->
     <group if="$(arg led)">
       <include file="$(find panther_led_controller)/launch/led_controller.launch">
-        <arg name="twist"            value="/panther_velocity_controller/cmd_vel" />
+        <arg name="output"     value="$(arg output)" />
       </include>
     </group>
     <!-- Launch joystick bridge to control:
