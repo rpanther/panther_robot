@@ -43,7 +43,7 @@ def info_song(song, name):
     if os.path.isfile(song):
         rospy.loginfo("Song {name}: {song}".format(name=name, song=song))
     else:
-        rospy.logwarn("Song {name} not defined".format(name=name))
+        rospy.logwarn("{name} song {song} does not exist!".format(name=name, song=song))
 
 
 class AudioController:
