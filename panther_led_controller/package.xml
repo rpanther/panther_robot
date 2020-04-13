@@ -13,8 +13,10 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <!--<depend>rosserial_arduino</depend>-->
+  <depend>rosserial_arduino</depend>
   <depend>rosserial_client</depend>
+  <depend>std_msgs</depend>
+  <depend>geometry_msgs</depend>
   <depend>rosserial_python</depend>
 
 </package>
