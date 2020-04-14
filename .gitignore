@@ -4,3 +4,6 @@
 build/
 # IDE
 .vscode/
+# Do not commit libraries
+# Are located in firmware folder
+libraries/
