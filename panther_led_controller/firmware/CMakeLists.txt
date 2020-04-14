@@ -3,9 +3,8 @@ cmake_minimum_required(VERSION 2.8.3)
 # REFERENCE
 # http://wiki.ros.org/rosserial_arduino/Tutorials/CMake
 # https://github.com/queezythegreat/arduino-cmake#creating-firmware-images
-#set(led_controller_SRCS chatter.cpp ${ROS_LIB_DIR}/time.cpp)
-set(led_controller_SRCS led_controller/led_controller.ino led_controller/led_effect.ino led_controller/system.ino ${ROS_LIB_DIR}/time.cpp)
-#set(led_controller_HDRS  chatter.h)
+set(led_controller_SRCS led_controller.cpp system.cpp led_effect.cpp ${ROS_LIB_DIR}/time.cpp)
+set(led_controller_HDRS system.hpp led_effect.hpp)
 set(led_controller_PORT /dev/ttyUSB0)
 # Arduino nano328 is the same of uno!
 # See: http://code.google.com/p/arduino/wiki/Platforms
@@ -16,15 +15,13 @@ include_directories(${ROS_LIB_DIR})
 add_definitions(-DUSB_CON)
 
 # Set author to download
-set(GIT_AUTHOR "adafruit")
-set(GIT_REPO "Adafruit_NeoPixel")
-# Check existence library
-set(PATH "${CMAKE_CURRENT_SOURCE_DIR}/libraries/${GIT_REPO}")
-if (NOT EXISTS "${PATH}")
-  message(STATUS "Library does not exist. Downloading now ...")
-  # https://stackoverflow.com/questions/35689501/cmakes-execute-process-and-arbitrary-shell-scripts
-  execute_process(COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/arduino_libraries.sh ${CMAKE_CURRENT_SOURCE_DIR} ${GIT_AUTHOR} ${GIT_REPO})
-endif()
+set(ADAFRUIT_REPO "adafruit/Adafruit_NeoPixel")
+set(TIMERONE_REPO "PaulStoffregen/TimerOne")
+set(REPOS_LIST ${ADAFRUIT_REPO} ${TIMERONE_REPO})
+# Check libraries
+message(STATUS "Check Arduino libraries.")
+# https://stackoverflow.com/questions/35689501/cmakes-execute-process-and-arbitrary-shell-scripts
+execute_process(COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/arduino_libraries.sh ${CMAKE_CURRENT_SOURCE_DIR} ${REPOS_LIST})
 
 # Link directories libraries
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/libraries)

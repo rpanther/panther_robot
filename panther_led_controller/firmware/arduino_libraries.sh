@@ -33,29 +33,41 @@ if [ -z $1 ] ; then
     echo "${red}Require to pass a path!${reset}"
     exit 1
 fi
+
 # Get path
 LIBRARY_PATH="$1/libraries"
-# Library to download
-AUTHOR=$2
-REPOSITORY=$3
-# Get latest release from GitHub api, Get tag line
-echo "Find last version of $AUTHOR $REPOSITORY"
-TAG_VERSION=$(curl --silent "https://api.github.com/repos/$AUTHOR/$REPOSITORY/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
-# Print version
-echo "Download $TAG_VERSION last version $REPOSITORY"
 # Download Adafruit library
 if [ ! -d "$LIBRARY_PATH" ] ; then
     echo "Make folder $LIBRARY_PATH"
-    mkdir "$LIBRARY_PATH"
+    mkdir -p "$LIBRARY_PATH"
 fi
-# Download latest version
-wget --output-document "$LIBRARY_PATH/latest.tar.gz" "https://github.com/$AUTHOR/$REPOSITORY/archive/$TAG_VERSION.tar.gz"
-# Unzip file
-tar -xf "$LIBRARY_PATH/latest.tar.gz" -C "$LIBRARY_PATH"
-# Remove file
-rm "$LIBRARY_PATH/latest.tar.gz"
-# Rename folder
-mv "$LIBRARY_PATH/$REPOSITORY-$TAG_VERSION" "$LIBRARY_PATH/$REPOSITORY"
-# Download complete
-echo "${green}$REPOSITORY added in $LIBRARY_PATH ${reset}"
+
+while [ -n "$2" ]; do
+    # Library to download
+    AUTHOR=$(echo $2 | cut -d '/' -f1 )
+    REPOSITORY=$(echo $2 | cut -d '/' -f2 )
+    # Check if is already downloaded
+    if [ -d "$LIBRARY_PATH/$REPOSITORY" ] ; then
+        shift 1
+        continue
+    fi
+    # Get latest release from GitHub api, Get tag line
+    echo "Find last version of $AUTHOR $REPOSITORY"
+    # Find tag version
+    TAG_VERSION=$(curl --silent "https://api.github.com/repos/$AUTHOR/$REPOSITORY/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+    # Print version
+    echo "Download $TAG_VERSION last version $REPOSITORY"
+    # Download latest version
+    wget --output-document "$LIBRARY_PATH/latest.tar.gz" "https://github.com/$AUTHOR/$REPOSITORY/archive/$TAG_VERSION.tar.gz"
+    # Unzip file
+    tar -xf "$LIBRARY_PATH/latest.tar.gz" -C "$LIBRARY_PATH"
+    # Remove file
+    rm "$LIBRARY_PATH/latest.tar.gz"
+    # Rename folder
+    mv "$LIBRARY_PATH/$REPOSITORY-$TAG_VERSION" "$LIBRARY_PATH/$REPOSITORY"
+    # Download complete
+    echo "${green}$REPOSITORY added in $LIBRARY_PATH ${reset}"
+    # Shift to next library
+    shift 1
+done
 # EOF
