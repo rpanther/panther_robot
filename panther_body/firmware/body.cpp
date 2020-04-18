@@ -63,7 +63,7 @@
 ros::NodeHandle nh;
 // Initialization sensors
 //SFR10 sensors[SIZE_SFR10] = {SFR10(112, "sfr10_left"), SFR10(113, "sfr10_right"), SFR10(113, "sfr10_rear")};
-SFR10 sensors[SIZE_SFR10] = {SFR10(112, "sfr10_left"), SFR10(113, "sfr10_right")};
+//SFR10 sensors[SIZE_SFR10] = {SFR10(112, "sfr10_left"), SFR10(113, "sfr10_right")};
 
 void TwistMessageCb( const geometry_msgs::Twist& msg) {
   char tmp_buffer[50];
@@ -84,50 +84,59 @@ void EnableMessageCb( const std_msgs::Bool& msg) {
 // Reference Range message
 // http://docs.ros.org/melodic/api/sensor_msgs/html/msg/Range.html
 sensor_msgs::Range range_msg;
+ros::Publisher pub_range_left("sfr10_left", &range_msg);
+ros::Publisher pub_range_right("sfr10_right", &range_msg);
 // Define the twist subscriber
 ros::Subscriber<geometry_msgs::Twist> twist(TWIST_SUBSCRIBER_TOPIC, &TwistMessageCb);
 ros::Subscriber<std_msgs::Bool> enable_status(ENABLE_SUBSCRIBER_TOPIC, &EnableMessageCb);
-ros::Publisher pub_range("range_data", &range_msg);
 
+char frame_left[] = "frame_left";
+char frame_right[] = "frame_right";
+SFR10_t sensors[SIZE_SFR10];
 
 void setup()
 {
+  // Initializtion ROS node
+  nh.initNode();
   // Initialization LED builtin
   pinMode(LED_BUILTIN, OUTPUT);
   // Initialization NeoPixels
   pinMode(LEDS_LEFT, OUTPUT);
   pinMode(LEDS_RIGHT, OUTPUT);
-  // Waits to make sure everything is powered up before sending or receiving data
-  Wire.begin();
-  // Initializtion ROS node
-  nh.initNode();
+  // Initialize SFR10 sensors
+  SFR10_connect(&range_msg);
+  SFR10_init(&sensors[0], &pub_range_left, &range_msg, 112, frame_left);
+  SFR10_init(&sensors[1], &pub_range_right, &range_msg, 113, frame_right);
+
+  // Publish Sonar range
+  nh.advertise(pub_range_left);
+  nh.advertise(pub_range_right);
+
   // Initialization twist and enable subscriber
   nh.subscribe(twist);
   nh.subscribe(enable_status);
-  // Publish Sonar range
-  nh.advertise(pub_range);
-
-  
-  // Initialzie range message
-  // SFR10 https://www.robot-electronics.co.uk/htm/srf10tech.htm
-  range_msg.radiation_type = sensor_msgs::Range::ULTRASOUND;
-  // range_msg.header.frame_id =  frameid;
-  range_msg.field_of_view = 0.01;
-  range_msg.min_range = 0.03;
-  range_msg.max_range = 0.4;
 }
 
 bool status = true;
+unsigned long range_timer;
+
+
 
 void loop()
 {
-  digitalWrite(LED_BUILTIN, status);
-  for(int i = 0; i < SIZE_SFR10; ++i)
-  {
-    sensors[i].getRange();
+  // publish the range value every 50 milliseconds
+  //   since it takes that long for the sensor to stabilize
+  if ( (millis() - range_timer) > 50){
+    // Update led status
+    digitalWrite(LED_BUILTIN, status);
+    //range_msg.range = sensors[0].getRange();
+    int left = SFR10_publish(&nh, &sensors[0]);
+    //int right = SFR10_publish(&nh, &sensors[1]);
+    // Update range timer
+    range_timer =  millis();
+    status = !status;
   }
-  status = !status;
-  delay(500);
+  nh.spinOnce();
 }
 // EOF
 

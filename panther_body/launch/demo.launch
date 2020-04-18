@@ -27,8 +27,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
 <launch>
   
-  <!-- Launch Teesny controller -->
-  <include file="$(find panther_led_controller)/launch/led_controller.launch">
+  <!-- Panther body controller -->
+  <include file="$(find panther_body)/launch/body.launch">
     <arg name="output"     value="screen" />
   </include>
     

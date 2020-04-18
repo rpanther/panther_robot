@@ -28,25 +28,28 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <Arduino.h>
+#include <ros.h>
+ #include <sensor_msgs/Range.h>
 
-class SFR10
-{
-    public:
-        /**
-         * Initialize a SFR10 sensor
-         */
-        SFR10(int srfAddress, String name);
-        /**
-         * Run configuration script
-         */
-        void init();
-        /**
-         * Read the status of the sensor
-         */
-        int getRange();
-    
-    private:
-        int srfAddress_;
-        String* name_;
-};
+typedef struct _SFR10 {
+    sensor_msgs::Range* msg;
+    ros::Publisher* pub;
+    int address;
+    char* name;
+} SFR10_t;
+
+/**
+ *
+ */
+void SFR10_connect(sensor_msgs::Range* range_msg);
+
+
+void SFR10_init(SFR10_t* SFR10, ros::Publisher* pub, sensor_msgs::Range* range_msg, int address, char* name);
+/**
+ *
+ */
+int SFR10_publish(ros::NodeHandle* nh, SFR10_t* SFR10);
+/**
+ * Read the status of the sensor
+ */
+int SFR10_getRange(int srfAddress);
