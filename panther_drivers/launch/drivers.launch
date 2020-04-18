@@ -33,7 +33,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   <arg name="motors"          default="true" />
   <arg name="lidar"           default="true" />
   <arg name="zed"             default="true" />
-  <arg name="led"             default="true" />
+  <arg name="body"            default="true" />
   <arg name="joystick"        default="true" />
   <arg name="scan_processing" default="false" />
 
@@ -51,7 +51,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         - jetson_stats
         - audio
         - ZED
-        - TODO: led_controller
+        - body (LEDs and Ultrasounds)
         - joystick
         This node load hardware diagnostic system
         - Diagnostic
@@ -101,9 +101,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         <arg name="output"           value="$(arg output)" />
       </include>
     </group>
-    <!-- LED effect controller -->
-    <group if="$(arg led)">
-      <include file="$(find panther_led_controller)/launch/led_controller.launch">
+    <!-- Panther body (Leds, Ultrasounds) -->
+    <group if="$(arg body)">
+      <include file="$(find panther_body)/launch/body.launch">
         <arg name="output"     value="$(arg output)" />
       </include>
     </group>

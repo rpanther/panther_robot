@@ -55,8 +55,8 @@
 // -------------------------//
 
 // Led definition
-#define PIN_LEFT            2
-#define PIN_RIGHT           3
+#define PIN_LEFT            3
+#define PIN_RIGHT           4
 #define LED_GREEN          10
 // NeoPixels attached
 #define NUMPIXELS          43

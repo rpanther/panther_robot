@@ -3,12 +3,14 @@ cmake_minimum_required(VERSION 2.8.3)
 # REFERENCE
 # http://wiki.ros.org/rosserial_arduino/Tutorials/CMake
 # https://github.com/queezythegreat/arduino-cmake#creating-firmware-images
-set(led_controller_SRCS led_controller.cpp system.cpp led_effect.cpp ${ROS_LIB_DIR}/time.cpp)
-set(led_controller_HDRS system.hpp led_effect.hpp)
-set(led_controller_PORT /dev/ttyUSB0)
+#set(led_controller_SRCS led_controller.cpp system.cpp led_effect.cpp ${ROS_LIB_DIR}/time.cpp)
+#set(led_controller_HDRS system.hpp led_effect.hpp)
+set(body_SRCS body.cpp SFR10.cpp ${ROS_LIB_DIR}/time.cpp)
+set(body_HDRS SFR10.hpp)
+set(body_PORT /dev/nano328p)
 # Arduino nano328 is the same of uno!
 # See: http://code.google.com/p/arduino/wiki/Platforms
-set(led_controller_BOARD uno)
+set(body_BOARD uno)
 
 include_directories(${ROS_LIB_DIR})
 # Remove this if using an Arduino without native USB (eg, other than Leonardo)
@@ -26,4 +28,4 @@ execute_process(COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/arduino_libraries.sh ${
 # Link directories libraries
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/libraries)
 # Generate arduino firmware
-generate_arduino_firmware(led_controller)
+generate_arduino_firmware(body)

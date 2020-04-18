@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>panther_led_controller</name>
+  <name>panther_body</name>
   <version>1.0.0</version>
   <description>Panther LED controller</description>
 
@@ -16,6 +16,7 @@
   <depend>rosserial_arduino</depend>
   <depend>rosserial_client</depend>
   <depend>std_msgs</depend>
+  <depend>sensor_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>rosserial_python</depend>
 

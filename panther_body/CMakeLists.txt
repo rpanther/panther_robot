@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(panther_led_controller)
+project(panther_body)
 
 # REFERENCE
 # http://wiki.ros.org/rosserial_arduino/Tutorials/CMake
@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
     rosserial_client
     geometry_msgs
     std_msgs
+    sensor_msgs
 )
 
 catkin_package()
@@ -27,6 +28,6 @@ rosserial_configure_client(
   TOOLCHAIN_FILE ${ROSSERIAL_ARDUINO_TOOLCHAIN}
 )
 
-rosserial_add_client_target(firmware led_controller ALL)
-rosserial_add_client_target(firmware led_controller-upload)
+rosserial_add_client_target(firmware body ALL)
+rosserial_add_client_target(firmware body-upload)
 
