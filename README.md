@@ -14,8 +14,8 @@ Read more about [Panther]
   - RPLidar [A2]
   - Stereolabs [ZED2]
   - Razor IMU [IMU]
-* **panther_joystick** - Interface to enable feature for panther
-* **panther_led_controller** - Led controller for panther robot
+* **panther_joystick** - Interface to enable feature for Panther
+* **panther_boy** - Sensors, LED and other parts from Panther robot
 
 [Panther]: http://rnext.it/panther/
 [AGX Xavier]: https://developer.nvidia.com/embedded/jetson-agx-xavier-developer-kit
