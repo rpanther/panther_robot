@@ -28,7 +28,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 <launch>
   <!-- Set port and configuration -->
   <arg name="port" default="/dev/teensy" />
-  <arg name="twist" default="velocity_controller/cmd_vel" />
+  <arg name="twist" default="~cmd_vel" />
+  <arg name="e_stop" default="~e_stop" />
+  <arg name="enable" default="~enable" />
   <arg name="config" default="$(find panther_body)/config/body.yaml" />
   <!-- Output
         - screen
@@ -39,9 +41,10 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   <!-- Serial controller -->
   <node pkg="rosserial_python" type="serial_node.py" name="body" args="$(arg port)" output="$(arg output)">
     <!-- Load default linear and angular velocity gain -->  
-    <!-- <rosparam command="load" file="$(arg config)" />-->
+    <rosparam command="load" file="$(arg config)" />
     <!-- Remap twist command topic -->
-    <!--<remap from="/cmd_vel" to="$(arg twist)"/>-->
-    <remap from="e_stop" to="roboteq/emergency_stop"/>
+    <remap from="~cmd_vel" to="$(arg twist)"/>
+    <remap from="~enable" to="$(arg enable)"/>
+    <remap from="~e_stop" to="$(arg e_stop)"/>
   </node>
 </launch>

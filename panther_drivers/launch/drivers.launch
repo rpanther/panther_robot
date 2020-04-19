@@ -104,6 +104,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <!-- Panther body (Leds, Ultrasounds) -->
     <group if="$(arg body)">
       <include file="$(find panther_body)/launch/body.launch">
+        <arg name="twist"     value="velocity_controller/cmd_vel" />
+        <arg name="e_stop"     value="roboteq/emergency_stop" />
+        <arg name="enable"     value="enable" />
         <arg name="output"     value="$(arg output)" />
       </include>
     </group>

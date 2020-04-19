@@ -38,9 +38,9 @@
 #define STRIP_SONAR             0
 #define STRIP_RAINBOW           1
 // Topic definition
-#define SUBSCRIBER_TWIST "cmd_vel"
-#define SUBSCRIBER_STOP  "e_stop"
-#define SUBSCRIBER_ENABLE "enable"
+#define SUBSCRIBER_TWIST "~cmd_vel"
+#define SUBSCRIBER_STOP  "~e_stop"
+#define SUBSCRIBER_ENABLE "~enable"
 
 // ROS libraries
 #include <ros.h>
@@ -116,7 +116,7 @@ neo_pixel_t strip_right = {Adafruit_NeoPixel(STRIP_NUM, STRIP_RIGHT, NEO_GRB + N
 // SFR10 definition
 typedef struct _SFR10 {
     int address;
-    char frame_id[15];
+    char frame_id[20];
     ros::Publisher* pub;
     sensor_msgs::Range* msg;
     int distance;
@@ -128,13 +128,13 @@ sensor_msgs::Range range_msg;
 #define SFR10_LEFT      0
 #define SFR10_RIGHT     1
 #define SFR10_REAR      2
-ros::Publisher pub_range_left("sfr10_left", &range_msg);
-ros::Publisher pub_range_right("sfr10_right", &range_msg);
-ros::Publisher pub_range_rear("sfr10_rear", &range_msg);
+ros::Publisher pub_range_left("~SFR10/left", &range_msg);
+ros::Publisher pub_range_right("~SFR10/right", &range_msg);
+ros::Publisher pub_range_rear("~SFR10/rear", &range_msg);
 SFR10_t sensors[SFR10_SIZE] = {
-  {112, "frame_left", &pub_range_left, &range_msg, 0},
-  {113, "frame_right", &pub_range_right, &range_msg, 0},
-  {114, "frame_rear", &pub_range_rear, &range_msg, 0}};
+  {112, "SFR10_left_frame", &pub_range_left, &range_msg, 0},
+  {113, "SFR10_right_frame", &pub_range_right, &range_msg, 0},
+  {114, "SFR10_rear_frame", &pub_range_rear, &range_msg, 0}};
 // Subscribers update
 ros::Subscriber<geometry_msgs::Twist> sub_twist(SUBSCRIBER_TWIST, &TwistMessageCb);
 ros::Subscriber<std_msgs::Bool> sub_stop(SUBSCRIBER_STOP, &StopMessageCb);
@@ -223,10 +223,13 @@ void loop()
   // Fast loop update SFR10 sensor
   if (soft_timer_run(sfr10_update))
   {
-    // Update SFR10 status
-    for(int i = 0; i < SFR10_SIZE; ++i)
+    if(nh.connected())
     {
-      SFR10_update(sensors[i]);
+      // Update SFR10 status
+      for(int i = 0; i < SFR10_SIZE; ++i)
+      {
+        SFR10_update(sensors[i]);
+      }
     }
     // Run only if is not in stop
     if(enable_status == STRIP_SONAR)
@@ -243,14 +246,19 @@ void loop()
   // Slow loop publish SFR10 status
   if (soft_timer_run(publish))
   {
-    // Update led status
-    digitalWrite(LED_BUILTIN, led_status);
-    led_status = !led_status;
-    // Update SFR10 status
-    for(int i = 0; i < SFR10_SIZE; ++i)
+    if(nh.connected())
     {
-      SFR10_publish(&nh, sensors[i]);
+      led_status = HIGH;
+      // Update SFR10 status
+      for(int i = 0; i < SFR10_SIZE; ++i)
+      {
+        SFR10_publish(&nh, sensors[i]);
+      }
+    } else {
+      // Update led status
+      led_status = !led_status;
     }
+    digitalWrite(LED_BUILTIN, led_status);
   }
   // Run only if is not in stop
   if(stop_status)
