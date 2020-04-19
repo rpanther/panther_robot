@@ -31,7 +31,7 @@
 import rospy
 from sensor_msgs.msg import Joy
 # Topic manager
-from .TopicButton import TopicButton
+from .TopicButton import BoolButton, TopicButton
 
 
 class ButtonManager:
@@ -49,12 +49,21 @@ class ButtonManager:
             if 'topic' not in config or 'button' not in config:
                 rospy.logwarn("Check {name} button (Miss topic or button)".format(name=name))
                 continue
+            # Load type of button
+            type_button = config.get('type', 'bool')
             topic = config['topic']
             button = config['button']
-            status = config.get('status', True)
-            rospy.loginfo(" [{button}] {name}. topic={topic} - status={status}".format(button=button, name=name, topic=topic, status=status))
-            # Add button in list
-            self.buttons[name] = TopicButton(button, topic, status=status)
+            # Initialzie buttons
+            if type_button == 'bool':
+                status = config.get('status', True)
+                rospy.loginfo(" [{button}] {name}. topic={topic} - status={status}".format(button=button, name=name, topic=topic, status=status))
+                # Add button in list
+                self.buttons[name] = BoolButton(button, topic, status=status)
+            elif type_button == 'counter':
+                max_value = config.get('max', 10)
+                rospy.loginfo(" [{button}] {name}. topic={topic} - max={max}".format(button=button, name=name, topic=topic, max=max_value))
+                # Add button in list
+                self.buttons[name] = TopicButton(button, topic, max_value=max_value)
         # Launch Joystick reader
         rospy.Subscriber(joy_topic, Joy, self.joy_callback)
 

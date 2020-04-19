@@ -4,8 +4,12 @@ joy: 'joy'
 # Buttons list manager
 buttons:
     # Define led on off button and parameter reference
-    led:
-        # Enable/Disable button
+    effect:
+        # Type of button
+        type: 'counter'
+        # max value
+        max: 3
+        # Button
         button: 7
         # Topic to send enable/disable message
         topic: 'enable'

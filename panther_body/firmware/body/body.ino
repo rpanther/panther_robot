@@ -34,6 +34,9 @@
 // NeoPixels attached
 #define STRIP_NUM               43
 #define STRIP_DEF_BRIGHTNESS    50
+// Effects
+#define STRIP_SONAR             0
+#define STRIP_RAINBOW           1
 // Topic definition
 #define SUBSCRIBER_TWIST "cmd_vel"
 #define SUBSCRIBER_STOP  "e_stop"
@@ -43,6 +46,8 @@
 #include <ros.h>
 // http://wiki.ros.org/std_msgs
 #include <std_msgs/Bool.h>
+#include <std_msgs/Int8.h>
+// https://docs.ros.org/api/geometry_msgs/html/msg/Twist.html
 #include <geometry_msgs/Twist.h>
 // http://docs.ros.org/melodic/api/sensor_msgs/html/msg/Range.html
 #include <sensor_msgs/Range.h>
@@ -58,7 +63,7 @@
 char loginfo_buffer[100];
 // Functions definitions
 void TwistMessageCb( const geometry_msgs::Twist& msg);
-void EnableMessageCb(const std_msgs::Bool& msg);
+void EnableMessageCb(const std_msgs::Int8& msg);
 void StopMessageCb(const std_msgs::Bool& msg);
 
 
@@ -133,10 +138,10 @@ SFR10_t sensors[SFR10_SIZE] = {
 // Subscribers update
 ros::Subscriber<geometry_msgs::Twist> sub_twist(SUBSCRIBER_TWIST, &TwistMessageCb);
 ros::Subscriber<std_msgs::Bool> sub_stop(SUBSCRIBER_STOP, &StopMessageCb);
-ros::Subscriber<std_msgs::Bool> sub_enable(SUBSCRIBER_ENABLE, &EnableMessageCb);
+ros::Subscriber<std_msgs::Int8> sub_enable(SUBSCRIBER_ENABLE, &EnableMessageCb);
 
 geometry_msgs::Twist twist;
-bool enable_status = false;
+int enable_status = 3;
 bool stop_status = false;
 
 /**
@@ -153,7 +158,7 @@ void TwistMessageCb( const geometry_msgs::Twist& msg) {
  * @brief Enable message
  */
 
-void EnableMessageCb(const std_msgs::Bool& msg) {
+void EnableMessageCb(const std_msgs::Int8& msg) {
   // Update status controller
   enable_status = msg.data;
   // Send log message information
@@ -202,15 +207,18 @@ bool led_status = true;
 
 void loop()
 {
+  // Clear status strips
   NEOpixel_clear(strip_left);
   NEOpixel_clear(strip_right);
-  if(enable_status)
+  switch(enable_status)
   {
-    NEOpixel_rainbow(strip_left);
-    NEOpixel_rainbow(strip_right);
-  } else {
-    NEOpixel_rainbow_stop(strip_left);
-    NEOpixel_rainbow_stop(strip_right);
+    case STRIP_RAINBOW:
+      NEOpixel_rainbow(strip_left);
+      NEOpixel_rainbow(strip_right);
+      break;
+    default:
+      NEOpixel_rainbow_stop(strip_left);
+      NEOpixel_rainbow_stop(strip_right);
   }
   // Fast loop update SFR10 sensor
   if (soft_timer_run(sfr10_update))
@@ -221,7 +229,7 @@ void loop()
       SFR10_update(sensors[i]);
     }
     // Run only if is not in stop
-    if(enable_status)
+    if(enable_status == STRIP_SONAR)
     {
       NEOpixel_range(strip_left, strip_left.NEOPixel.Color(255, 0, 0), sensors[SFR10_LEFT].distance / 2, true);
       NEOpixel_range(strip_right, strip_right.NEOPixel.Color(255, 0, 0), sensors[SFR10_RIGHT].distance / 2, true);
