@@ -8,7 +8,7 @@ buttons:
         # Enable/Disable button
         button: 7
         # Topic to send enable/disable message
-        topic: 'led_controller/status'
+        topic: 'enable'
     # Define emergency button for Roboteq controller
     emergency:
         # Enable/Disable button

@@ -14,7 +14,12 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
 )
 
-catkin_package()
+catkin_package(
+  CATKIN_DEPENDS 
+    geometry_msgs
+    std_msgs
+    sensor_msgs
+)
 
 ###########
 ## Build ##
@@ -27,9 +32,10 @@ rosserial_generate_ros_lib(
 
 rosserial_configure_client(
   DIRECTORY firmware
-  TOOLCHAIN_FILE ${ROSSERIAL_ARDUINO_TOOLCHAIN}
+  TOOLCHAIN_FILE ${ROS_TEENSY_TOOLCHAIN}
 )
 
-rosserial_add_client_target(firmware body ALL)
-rosserial_add_client_target(firmware body-upload)
+# TODO: Removed waiting NUCLEO to change
+# rosserial_add_client_target(firmware body_Firmware ALL)
+# rosserial_add_client_target(firmware body-upload)
 

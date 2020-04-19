@@ -28,28 +28,38 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <ros.h>
- #include <sensor_msgs/Range.h>
 
-typedef struct _SFR10 {
-    sensor_msgs::Range* msg;
-    ros::Publisher* pub;
-    int address;
-    char* name;
-} SFR10_t;
+void soft_timer_init(soft_timer_t &timer, float inter)
+{
+  timer.start = true;
+  timer.currentMillis = 0;
+  timer.previousMillis = 0;
+  timer.interval = inter * 1000;
+}
 
-/**
- *
- */
-void SFR10_connect(sensor_msgs::Range* range_msg);
+void soft_timer_start(soft_timer_t &timer)
+{
+  timer.start = true;
+  timer.previousMillis = millis();
+}
 
+void soft_timer_stop(soft_timer_t &timer)
+{
+  timer.start = false;
+}
 
-void SFR10_init(SFR10_t* SFR10, ros::Publisher* pub, sensor_msgs::Range* range_msg, int address, char* name);
-/**
- *
- */
-int SFR10_publish(ros::NodeHandle* nh, SFR10_t* SFR10);
-/**
- * Read the status of the sensor
- */
-int SFR10_getRange(int srfAddress);
+bool soft_timer_run(soft_timer_t &timer)
+{
+  if(timer.start) {
+    // software timer
+    timer.currentMillis = millis();
+    // Evaluate interval
+    if (timer.currentMillis - timer.previousMillis >= timer.interval) {
+      // save the last time
+      timer.previousMillis = timer.currentMillis;
+  
+      return true;
+    }
+  }
+  return false;
+}
