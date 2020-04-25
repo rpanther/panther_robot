@@ -32,6 +32,11 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   <arg name="two_d_mode"   default="false" />
   <!-- Enable/Disable sensor fusion -->
   <arg name="localization"       default="true" />
+  <!-- Machine definition:
+        - local (Run all node in current machine)
+        - remote (Run all node in a remote address)
+       -->
+  <arg name="machine"         default="local" />
 
   <!-- Load all device drivers:
         - Roboteq
@@ -40,7 +45,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         - RPLidar
         - LEDs
        -->
-  <include file="$(find panther_drivers)/launch/drivers.launch" />
+  <include file="$(find panther_drivers)/launch/drivers.launch">
+    <arg name="machine"      value="$(arg machine)" />
+  </include>
   <!-- Run all common parts:
        - ROS Controllers
        - Localization nodes
