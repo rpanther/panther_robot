@@ -48,12 +48,19 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   <arg name="body"            default="true" />
   <arg name="joystick"        default="true" />
   <arg name="scan_processing" default="false" />
-
+  <!-- Machine definition:
+        - local (Run all node in current machine)
+        - remote (Run all node in a remote address)
+       -->
+  <arg name="machine"         default="local" />
   <!-- Output
         - screen
         - log
        -->
   <arg name="output"          default="log" />
+
+  <!-- Machine definition -->
+  <include file="$(find panther_machine)/$(arg machine).machine" />
 
   <!-- Load robot description -->
   <include file="$(find panther_description)/launch/description.launch" />
@@ -67,26 +74,31 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
       <arg name="port"        value="/dev/roboteq" />
       <arg name="config"      value="$(find panther_drivers)/config/roboteq.yaml" />
       <arg name="respawn"     value="true" />
-      <arg name="output"     value="$(arg output)" />
+      <arg name="output"      value="$(arg output)" />
+      <arg name="machine"     value="panther" />
     </include>
   </group>
   <group unless="$(arg motors)">
     <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" output="$(arg output)" />
   </group>
   <!-- Jetson-stats -->
-  <node pkg="ros_jetson_stats" type="jetson_stats.py" name="ros_jetson_stats">
+  <node machine="panther" pkg="ros_jetson_stats" type="jetson_stats.py" name="ros_jetson_stats">
     <rosparam command="load" file="$(find panther_drivers)/config/jetson_stats.yaml" />
   </node>
   <!-- IMU -->
   <include file="$(find panther_drivers)/launch/driver/razor_imu.launch">
     <arg name="output"        value="$(arg output)" />
+    <arg name="machine"       value="panther" />
   </include>
   <!-- Audio controller -->
-  <include file="$(find panther_drivers)/launch/driver/audio.launch" />
+  <include file="$(find panther_drivers)/launch/driver/audio.launch">
+    <arg name="machine"       value="panther" />
+  </include>
   <!-- RP Lidar -->
   <group if="$(arg lidar)">
     <include file="$(find panther_drivers)/launch/driver/rplidar.launch">
       <arg name="output"        value="$(arg output)" />
+    <arg name="machine"         value="panther" />
     </include>
   </group>
   <!-- ZED camera -->
@@ -97,15 +109,17 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
       <arg name="node_name"        value="zed" />
       <arg name="scan_processing"  value="$(arg scan_processing)" />
       <arg name="output"           value="$(arg output)" />
+      <arg name="machine"          value="panther" />
     </include>
   </group>
   <!-- Panther body (Leds, Ultrasounds) -->
   <group if="$(arg body)">
     <include file="$(find panther_body)/launch/body.launch">
-      <arg name="twist"     value="velocity_controller/cmd_vel" />
+      <arg name="twist"      value="velocity_controller/cmd_vel" />
       <arg name="e_stop"     value="roboteq/emergency_stop" />
       <arg name="enable"     value="enable" />
       <arg name="output"     value="$(arg output)" />
+      <arg name="machine"    value="panther" />
     </include>
   </group>
   <!-- Launch joystick bridge to control:
@@ -115,6 +129,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   <group if="$(arg joystick)">
     <include file="$(find panther_joystick)/launch/joystick.launch">
       <arg name="output"        value="$(arg output)" />
+      <arg name="machine"       value="panther" />
     </include>
   </group>
 </launch>

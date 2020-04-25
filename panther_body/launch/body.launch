@@ -37,9 +37,15 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         - log
        -->
   <arg name="output"          default="log" />
+  <!-- Machine name if default run in localhost -->
+  <arg name="machine"         default="_default_" />
+  
+  <group if="$(eval arg('machine') == '_default_')">
+    <machine name="_default_" address="localhost" default="never" timeout="10"/>
+  </group>
 
   <!-- Serial controller -->
-  <node pkg="rosserial_python" type="serial_node.py" name="body" args="$(arg port)" output="$(arg output)">
+  <node machine="$(arg machine)" pkg="rosserial_python" type="serial_node.py" name="body" args="$(arg port)" output="$(arg output)">
     <!-- Load default linear and angular velocity gain -->  
     <rosparam command="load" file="$(arg config)" />
     <!-- Remap twist command topic -->

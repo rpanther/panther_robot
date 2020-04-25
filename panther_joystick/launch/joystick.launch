@@ -32,8 +32,14 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
        - log
       -->
   <arg name="output"          default="log" />
+  <!-- Machine name if default run in localhost -->
+  <arg name="machine"         default="_default_" />
+  
+  <group if="$(eval arg('machine') == '_default_')">
+    <machine name="_default_" address="localhost" default="never" timeout="10"/>
+  </group>
 
-  <node pkg="panther_joystick" type="joystick_bridge.py" name="panther_joystick" output="$(arg output)">
+  <node machine="$(arg machine)" pkg="panther_joystick" type="joystick_bridge.py" name="panther_joystick" output="$(arg output)">
     <rosparam command="load" file="$(find panther_joystick)/config/joystick.yaml" />
   </node>
 
