@@ -9,7 +9,7 @@ from os import path
 import re
 
 here = path.abspath(path.dirname(__file__))
-project_homepage = "https://github.com/rpanther/panther_hardware"
+project_homepage = "https://github.com/rpanther/panther_robot"
 
 # with open(path.join(here, 'requirements.txt'), encoding='utf-8') as f:
 #     requirements = f.read().splitlines()

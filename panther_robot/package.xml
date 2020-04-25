@@ -8,7 +8,7 @@
   <license>MIT</license>
   
   <url type="website">https://rnext.it/panther</url>
-  <url type="repository">https://github.com/rpanther/panther</url>
+  <url type="repository">https://github.com/rpanther/panther_robot</url>
   <author email="raffaello@rnext.it">Raffaello Bonghi</author>
 
   <buildtool_depend>catkin</buildtool_depend>
@@ -16,6 +16,7 @@
   <run_depend>panther_body</run_depend>
   <run_depend>panther_drivers</run_depend>
   <run_depend>panther_joystick</run_depend>
+  <run_depend>panther_bringup</run_depend>
 
   <export>
     <metapackage/>

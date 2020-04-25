@@ -27,7 +27,19 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
 <launch>
 
-  <arg name="namespace"       default="panther" />
+  <!-- All nodes are loaded in same namespace 
+       Drivers:
+        - Roboteq
+        - rplidar
+        - razor_imu
+        - jetson_stats
+        - audio
+        - ZED
+        - body (LEDs and Ultrasounds)
+        - joystick
+        This node load hardware diagnostic system
+        - Diagnostic
+       -->
   <arg name="diagnostic"      default="false" />
   <!-- Drivers -->
   <arg name="motors"          default="true" />
@@ -43,81 +55,67 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
        -->
   <arg name="output"          default="log" />
 
-  <!-- All nodes are loaded in same namespace 
-       Drivers:
-        - Roboteq
-        - rplidar
-        - razor_imu
-        - jetson_stats
-        - audio
-        - ZED
-        - body (LEDs and Ultrasounds)
-        - joystick
-        This node load hardware diagnostic system
-        - Diagnostic
-       -->
-  <group ns="$(arg namespace)">
-    <!-- Load robot description -->
-    <include file="$(find panther_description)/launch/description.launch" />
-    <!-- Diagnostic -->
-    <group if="$(arg diagnostic)">
-      <include file="$(find panther_drivers)/launch/diagnostic.launch" />
-    </group>
-    <!-- Motors -->
-    <group if="$(arg motors)">
-      <include file="$(find roboteq_control)/launch/roboteq.launch">
-        <arg name="port"        value="/dev/roboteq" />
-        <arg name="config"      value="$(find panther_drivers)/config/roboteq.yaml" />
-        <arg name="respawn"     value="true" />
-        <arg name="output"     value="$(arg output)" />
-      </include>
-    </group>
-    <group unless="$(arg motors)">
-      <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" output="$(arg output)" />
-    </group>
-    <!-- Jetson-stats -->
-    <node pkg="ros_jetson_stats" type="jetson_stats.py" name="ros_jetson_stats">
-      <rosparam command="load" file="$(find panther_drivers)/config/jetson_stats.yaml" />
-    </node>
-    <!-- IMU -->
-    <include file="$(find panther_drivers)/launch/driver/razor_imu.launch">
+  <!-- Load robot description -->
+  <include file="$(find panther_description)/launch/description.launch" />
+  <!-- Diagnostic -->
+  <group if="$(arg diagnostic)">
+    <include file="$(find panther_drivers)/launch/diagnostic.launch" />
+  </group>
+  <!-- Motors -->
+  <group if="$(arg motors)">
+    <include file="$(find roboteq_control)/launch/roboteq.launch">
+      <arg name="port"        value="/dev/roboteq" />
+      <arg name="config"      value="$(find panther_drivers)/config/roboteq.yaml" />
+      <arg name="respawn"     value="true" />
+      <arg name="output"     value="$(arg output)" />
+    </include>
+  </group>
+  <group unless="$(arg motors)">
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" output="$(arg output)" />
+  </group>
+  <!-- Jetson-stats -->
+  <node pkg="ros_jetson_stats" type="jetson_stats.py" name="ros_jetson_stats">
+    <rosparam command="load" file="$(find panther_drivers)/config/jetson_stats.yaml" />
+  </node>
+  <!-- IMU -->
+  <include file="$(find panther_drivers)/launch/driver/razor_imu.launch">
+    <arg name="output"        value="$(arg output)" />
+  </include>
+  <!-- Audio controller -->
+  <include file="$(find panther_drivers)/launch/driver/audio.launch" />
+  <!-- RP Lidar -->
+  <group if="$(arg lidar)">
+    <include file="$(find panther_drivers)/launch/driver/rplidar.launch">
       <arg name="output"        value="$(arg output)" />
     </include>
-    <!-- Audio controller -->
-    <include file="$(find panther_drivers)/launch/driver/audio.launch" />
-    <!-- RP Lidar -->
-    <group if="$(arg lidar)">
-      <include file="$(find panther_drivers)/launch/driver/rplidar.launch">
-        <arg name="output"        value="$(arg output)" />
-      </include>
-    </group>
-    <!-- ZED camera -->
-    <group if="$(arg zed)">
-      <include file="$(find panther_drivers)/launch/driver/zed_camera.launch">
-        <arg name="camera_name"      value="zed2" />
-        <arg name="camera_model"     value="zed2" />
-        <arg name="node_name"        value="zed" />
-        <arg name="scan_processing"  value="$(arg scan_processing)" />
-        <arg name="output"           value="$(arg output)" />
-      </include>
-    </group>
-    <!-- Panther body (Leds, Ultrasounds) -->
-    <group if="$(arg body)">
-      <include file="$(find panther_body)/launch/body.launch">
-        <arg name="twist"     value="velocity_controller/cmd_vel" />
-        <arg name="e_stop"     value="roboteq/emergency_stop" />
-        <arg name="enable"     value="enable" />
-        <arg name="output"     value="$(arg output)" />
-      </include>
-    </group>
-    <!-- Launch joystick bridge to control:
-          - sound
-          - leds
-         -->
-    <group if="$(arg joystick)">
-      <include file="$(find panther_joystick)/launch/joystick.launch">
-        <arg name="output"        value="$(arg output)" />
-      </include>
-    </group>
+  </group>
+  <!-- ZED camera -->
+  <group if="$(arg zed)">
+    <include file="$(find panther_drivers)/launch/driver/zed_camera.launch">
+      <arg name="camera_name"      value="zed2" />
+      <arg name="camera_model"     value="zed2" />
+      <arg name="node_name"        value="zed" />
+      <arg name="scan_processing"  value="$(arg scan_processing)" />
+      <arg name="output"           value="$(arg output)" />
+    </include>
+  </group>
+  <!-- Panther body (Leds, Ultrasounds) -->
+  <group if="$(arg body)">
+    <include file="$(find panther_body)/launch/body.launch">
+      <arg name="twist"     value="velocity_controller/cmd_vel" />
+      <arg name="e_stop"     value="roboteq/emergency_stop" />
+      <arg name="enable"     value="enable" />
+      <arg name="output"     value="$(arg output)" />
+    </include>
+  </group>
+  <!-- Launch joystick bridge to control:
+        - sound
+        - leds
+       -->
+  <group if="$(arg joystick)">
+    <include file="$(find panther_joystick)/launch/joystick.launch">
+      <arg name="output"        value="$(arg output)" />
+    </include>
   </group>
 </launch>
+

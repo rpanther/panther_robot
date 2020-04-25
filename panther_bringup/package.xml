@@ -2,7 +2,7 @@
 <package format="2">
   <name>panther_body</name>
   <version>1.0.0</version>
-  <description>Panther LED controller</description>
+  <description>Panther body controller</description>
 
   <maintainer email="raffaello@rnext.it">Raffaello Bonghi</maintainer>
   <license>MIT</license>
@@ -13,13 +13,6 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <depend>ros_teensy</depend>
-  <depend>rosserial_arduino</depend>
-  <depend>rosserial_client</depend>
-  
-  <depend>std_msgs</depend>
-  <depend>sensor_msgs</depend>
-  <depend>geometry_msgs</depend>
-  <depend>rosserial_python</depend>
+  <run_depend>panther_common</run_depend>
 
 </package>
