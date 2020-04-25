@@ -42,10 +42,14 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
        -->
   <include file="$(find panther_drivers)/launch/drivers.launch" />
   <!-- Run all common parts:
+       - ROS Controllers
+       - Localization nodes
        -->
   <include file="$(find panther_common)/launch/common.launch">
-    <arg name="web" value="$(arg web)" />
-    <arg name="two_d_mode" value="$(arg two_d_mode)" />
+    <arg name="web"          value="$(arg web)" />
+    <arg name="port"         value="8001" />
+    <arg name="two_d_mode"   value="$(arg two_d_mode)" />
+    <arg name="localization" value="$(arg localization)" />
   </include>
   <!-- Launch diagnostic aggregator -->
   <include file="$(find panther_bringup)/launch/diagnostic.launch" />

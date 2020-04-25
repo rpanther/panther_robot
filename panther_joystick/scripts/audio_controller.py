@@ -71,7 +71,9 @@ class AudioController:
         path = rospy.get_param("~{audio}/path".format(audio=audio), "{home}/Music".format(home=os.environ['HOME']))
         # Lists all files in the current directory
         # Selected only the wav files
-        self.audiolist = ["{path}/{song}".format(path=path, song=item) for item in os.listdir(path) if item.endswith('.wav')]
+        self.audiolist = []
+        if os.path.exists(path):
+            self.audiolist = ["{path}/{song}".format(path=path, song=item) for item in os.listdir(path) if item.endswith('.wav')]
         if self.audiolist:
             rospy.loginfo("Audio loaded from {path}: ".format(path=path))
             for idx, item in enumerate(self.audiolist):
