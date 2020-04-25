@@ -21,6 +21,11 @@ buttons:
         topic: 'roboteq/emergency_stop'
     # Switch off the robot
     switch_off:
+        # Type of button
+        type: 'time'
+        # Send a message every second to this topic
+        topic_time: 'led'
+        # Buttons
         buttons: [4, 5]
         # Topic to send enable/disable message
         topic: 'switch_off'

@@ -27,6 +27,8 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import rospy
+
 
 class Buttons:
     """
@@ -41,32 +43,39 @@ class Buttons:
         self.numbers = numbers
         self._state = False
         self._old_state = False
-        self._status = "release"
+        self._click = False
+        self.status = "release"
+        self._start = 0
     
     def update(self, buttons):
-        self._status = "release"
+        self._click = False
         # Read button
         for num in self.numbers:
             if num >= len(buttons):
                 raise Button.ButtonException("Button [{num}] not in list".format(num=num))
         # Read button
         self._state = all([buttons[num] for num in self.numbers])
+        self.status = "pressed" if self._state else "released" 
         # Check edge
         if self._state and not self._old_state:
-            self._status = "pressed"
+            self._click = True
+            # Initialize timer
+            self._start = rospy.get_time()
         # Update status
         self._old_state = self._state
-    
+
     @property
-    def status(self):
-        return self._status
+    def time(self):
+        if self.status != "pressed":
+            return 0
+        return rospy.get_time() - self._start
 
     def __nonzero__(self):
-        return True if self._status == "pressed" else False
+        return self._click
 
     def __str__(self):
         return str(self.numbers)
     
     def __repr__(self):
-        return self._status
+        return "{status} {click}".format(status=self.status, click=self._click)
 # EOF

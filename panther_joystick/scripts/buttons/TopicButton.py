@@ -35,7 +35,54 @@ from std_msgs.msg import Bool, Int8
 from .button import Buttons
 
 
-class TopicButton:
+class TimeButton:
+    """
+    Convert a button pressed to timer topic
+    """
+    def __init__(self, numbers, topic, topic_timer="", time=3.5):
+        # Load button reader
+        self.buttons = Buttons(numbers)
+        # Initialize time
+        self.time = time
+        # status
+        self.status = True
+        # Load topic output
+        self.pub = rospy.Publisher(topic, Bool, queue_size=10)
+        # Set topic timer
+        if topic_timer:
+            # Load topic output
+            self.topic_timer = rospy.Publisher(topic_timer, Int8, queue_size=10)
+        self.timer = True if topic_timer else False
+        self._old_count = 0
+
+    def update(self, buttons):
+        # Update status button
+        self.buttons.update(buttons)
+        # Check status button
+        if self.buttons:
+            rospy.logdebug("{buttons} Start timer {time}".format(buttons=self.buttons, time=self.time))
+            # Reset counter
+            self._old_count = 0
+        # Send a topic message every second
+        if self.timer and self.status and int(self.buttons.time) > self._old_count:
+            self._old_count = int(self.buttons.time)
+            # Publish a message
+            rospy.logdebug("{buttons} Message={time}".format(buttons=self.buttons, time=int(self.buttons.time)))
+            # Publish status
+            self.pub.publish(int(self.buttons.time))
+        # update status
+        if self.buttons.time >= self.time:
+            if self.status:
+                self.status = False
+                rospy.logdebug("{buttons} time={time}".format(buttons=self.buttons, time=self.buttons.time))
+                # Publish status
+                self.pub.publish(self.status)
+        else:
+            self.status = True
+
+
+
+class CounterButton:
     """
     Convert a button pressed to counter topic
     """
