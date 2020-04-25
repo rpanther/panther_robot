@@ -9,13 +9,16 @@ This robot can climbs little rocks and little bumps. it is heavy with 11kg and w
 Read more about [Panther]
 
 ## Packages
+* **panter_bringup** Panther robot startup
 * **panter_drivers** Configuration and startup panther hardware drivers
   - Roboteq [SDC2130]
   - RPLidar [A2]
   - Stereolabs [ZED2]
   - Razor IMU [IMU]
+  - Body
+  - Joystick
 * **panther_joystick** - Interface to enable feature for Panther
-* **panther_boy** - Sensors, LED and other parts from Panther robot
+* **panther_body** - Sensors, LED and other parts from Panther robot
 
 [Panther]: http://rnext.it/panther/
 [AGX Xavier]: https://developer.nvidia.com/embedded/jetson-agx-xavier-developer-kit
