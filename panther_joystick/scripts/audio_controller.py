@@ -36,7 +36,7 @@ from sensor_msgs.msg import Joy
 from sound_play.libsoundplay import SoundClient
 from sound_play.msg import SoundRequestAction
 # buttons
-from buttons import Button
+from buttons import Buttons
 
 
 def info_song(song, name):
@@ -57,16 +57,16 @@ class AudioController:
         self.joy_topic = joy_topic
         self.sound_client_name = sound_client
         # Load music buttons
-        self.button_enable = Button(rospy.get_param("~{audio}/enable".format(audio=audio), 0))
-        self.play_stop = Button(rospy.get_param("~{audio}/start".format(audio=audio), 1))
-        self.next_song = Button(rospy.get_param("~{audio}/next".format(audio=audio), 2))
+        self.button_enable = Buttons(rospy.get_param("~{audio}/enable".format(audio=audio), 0))
+        self.play_stop = Buttons(rospy.get_param("~{audio}/start".format(audio=audio), 1))
+        self.next_song = Buttons(rospy.get_param("~{audio}/next".format(audio=audio), 2))
         rospy.loginfo("Audio controller:")
-        rospy.loginfo(" [{enable}] Enable - [{start}] Start/Stop - [{next}] Next".format(enable=self.button_enable,
-                                                                                         start=self.play_stop,
-                                                                                         next=self.next_song))
+        rospy.loginfo(" {enable} Enable - {start} Start/Stop - {next} Next".format(enable=self.button_enable,
+                                                                                   start=self.play_stop,
+                                                                                   next=self.next_song))
         # Load speech button
-        self.button_speech = Button(rospy.get_param("~{speech}/button".format(speech=speech), 3))
-        rospy.loginfo(" [{button}] speech".format(button=self.button_speech))
+        self.button_speech = Buttons(rospy.get_param("~{speech}/button".format(speech=speech), 3))
+        rospy.loginfo(" {button} speech".format(button=self.button_speech))
         # Load music
         path = rospy.get_param("~{audio}/path".format(audio=audio), "{home}/Music".format(home=os.environ['HOME']))
         # Lists all files in the current directory

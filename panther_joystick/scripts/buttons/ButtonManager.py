@@ -46,24 +46,27 @@ class ButtonManager:
         if buttons:
             rospy.loginfo("Buttons list:")
         for name, config in buttons.items():
-            if 'topic' not in config or 'button' not in config:
-                rospy.logwarn("Check {name} button (Miss topic or button)".format(name=name))
+            if 'buttons' not in config:
+                rospy.logwarn("Check {name} button (Miss button)".format(name=name))
+                continue
+            if 'topic' not in config :
+                rospy.logwarn("Check {name} button (Miss topic)".format(name=name))
                 continue
             # Load type of button
             type_button = config.get('type', 'bool')
             topic = config['topic']
-            button = config['button']
+            list_buttons = config['buttons']
             # Initialzie buttons
             if type_button == 'bool':
                 status = config.get('status', True)
-                rospy.loginfo(" [{button}] {name}. topic={topic} - status={status}".format(button=button, name=name, topic=topic, status=status))
-                # Add button in list
-                self.buttons[name] = BoolButton(button, topic, status=status)
+                rospy.loginfo("{list_buttons} {name}. topic={topic} - status={status}".format(list_buttons=list_buttons, name=name, topic=topic, status=status))
+                # Add buttons in list
+                self.buttons[name] = BoolButton(list_buttons, topic, status=status)
             elif type_button == 'counter':
                 max_value = config.get('max', 10)
-                rospy.loginfo(" [{button}] {name}. topic={topic} - max={max}".format(button=button, name=name, topic=topic, max=max_value))
-                # Add button in list
-                self.buttons[name] = TopicButton(button, topic, max_value=max_value)
+                rospy.loginfo("{list_buttons} {name}. topic={topic} - max={max}".format(list_buttons=list_buttons, name=name, topic=topic, max=max_value))
+                # Add buttons in list
+                self.buttons[name] = TopicButton(list_buttons, topic, max_value=max_value)
         # Launch Joystick reader
         rospy.Subscriber(joy_topic, Joy, self.joy_callback)
 

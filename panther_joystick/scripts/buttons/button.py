@@ -28,7 +28,7 @@
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-class Button:
+class Buttons:
     """
     Button class definition
     """
@@ -36,28 +36,37 @@ class Button:
     class ButtonException(Exception):
         pass
 
-    def __init__(self, num):
-        self.num = num
+    def __init__(self, numbers):
+        numbers = [numbers] if isinstance(numbers, int) else numbers
+        self.numbers = numbers
         self._state = False
         self._old_state = False
-        self.status = "release"
+        self._status = "release"
     
     def update(self, buttons):
-        self.status = "release"
+        self._status = "release"
         # Read button
-        if self.num >= len(buttons):
-            raise Button.ButtonException("Button not in list")
+        for num in self.numbers:
+            if num >= len(buttons):
+                raise Button.ButtonException("Button [{num}] not in list".format(num=num))
         # Read button
-        self._state = buttons[self.num]
+        self._state = all([buttons[num] for num in self.numbers])
         # Check edge
         if self._state and not self._old_state:
-            self.status = "pressed"
+            self._status = "pressed"
         # Update status
         self._old_state = self._state
     
+    @property
+    def status(self):
+        return self._status
+
     def __nonzero__(self):
-        return True if self.status == "pressed" else False
+        return True if self._status == "pressed" else False
 
     def __str__(self):
-        return str(self.num)
+        return str(self.numbers)
+    
+    def __repr__(self):
+        return self._status
 # EOF

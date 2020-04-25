@@ -10,15 +10,20 @@ buttons:
         # max value
         max: 3
         # Button
-        button: 7
+        buttons: [7]
         # Topic to send enable/disable message
         topic: 'enable'
     # Define emergency button for Roboteq controller
     emergency:
         # Enable/Disable button
-        button: 3
+        buttons: [3]
         # Topic to send enable/disable message
         topic: 'roboteq/emergency_stop'
+    # Switch off the robot
+    switch_off:
+        buttons: [4, 5]
+        # Topic to send enable/disable message
+        topic: 'switch_off'
 # Configuration start/stop and next button
 audio:
     # Enable disable audio controller

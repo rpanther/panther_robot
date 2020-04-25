@@ -32,27 +32,27 @@
 import rospy
 from std_msgs.msg import Bool, Int8
 # buttons
-from button import Button
+from .button import Buttons
 
 
 class TopicButton:
     """
     Convert a button pressed to counter topic
     """
-    def __init__(self, num, topic, max_value=10):
+    def __init__(self, numbers, topic, max_value=10):
         self.counter = 0
         self.max_value = max_value
         # Load button reader
-        self.button = Button(num)
+        self.buttons = Buttons(numbers)
         # Load topic output
         self.pub = rospy.Publisher(topic, Int8, queue_size=10)
 
     def update(self, buttons):
         # Update status button
-        self.button.update(buttons)
+        self.buttons.update(buttons)
         # publish if pressed
-        if self.button:
-            rospy.logdebug("[{button}] max={max_value}".format(button=self.button, max_value=self.max_value))
+        if self.buttons:
+            rospy.logdebug("{buttons} max={max_value}".format(buttons=self.buttons, max_value=self.max_value))
             self.pub.publish(self.counter)
             # Update status
             self.counter += 1
@@ -65,19 +65,19 @@ class BoolButton:
     """
     Convert a button pressed to boolean topic
     """
-    def __init__(self, num, topic, status=True):
+    def __init__(self, numbers, topic, status=True):
         self.status = status
         # Load button reader
-        self.button = Button(num)
+        self.buttons = Buttons(numbers)
         # Load topic output
         self.pub = rospy.Publisher(topic, Bool, queue_size=10)
 
     def update(self, buttons):
         # Update status button
-        self.button.update(buttons)
+        self.buttons.update(buttons)
         # publish if pressed
-        if self.button:
-            rospy.logdebug("[{button}] status={status}".format(button=self.button, status=self.status))
+        if self.buttons:
+            rospy.logdebug("{buttons} status={status}".format(buttons=self.buttons, status=self.status))
             self.pub.publish(self.status)
             # Update status
             self.status = not self.status
