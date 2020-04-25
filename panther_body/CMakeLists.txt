@@ -5,7 +5,6 @@ project(panther_body)
 # http://wiki.ros.org/rosserial_arduino/Tutorials/CMake
 
 find_package(catkin REQUIRED COMPONENTS 
-  ros_teensy
   rosserial_arduino 
   rosserial_client
   
@@ -30,12 +29,12 @@ rosserial_generate_ros_lib(
   SCRIPT make_libraries.py
 )
 
-rosserial_configure_client(
-  DIRECTORY firmware
-  TOOLCHAIN_FILE ${ROS_TEENSY_TOOLCHAIN}
-)
-
 # TODO: Removed waiting NUCLEO to change
+#rosserial_configure_client(
+#  DIRECTORY firmware
+#  TOOLCHAIN_FILE ${ROS_TEENSY_TOOLCHAIN}
+#)
+
 # rosserial_add_client_target(firmware body_Firmware ALL)
 # rosserial_add_client_target(firmware body-upload)
 
