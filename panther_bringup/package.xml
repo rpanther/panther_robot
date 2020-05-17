@@ -41,5 +41,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
   <exec_depend>panther_common</exec_depend>
   <exec_depend>panther_drivers</exec_depend>
+  <exec_depend>ros_orchestrator</exec_depend>
 
 </package>

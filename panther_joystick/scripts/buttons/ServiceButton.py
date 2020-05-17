@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 # Copyright (C) 2020, Raffaello Bonghi <raffaello@rnext.it>
 # All rights reserved
@@ -27,55 +28,35 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+from threading import Thread
+# ROS libraries
 import rospy
+from std_msgs.msg import Bool, Int8
+# buttons
+from .button import Buttons
 
 
-class Buttons:
-    """
-    Button class definition
-    """
+class ServiceButton:
 
-    class ButtonException(Exception):
-        pass
+    def __init__(self, numbers, service, service_class, request):
+        self.service = service
+        self.service_class = service_class
+        self.request = request
+        # Load button reader
+        self.buttons = Buttons(numbers)
+        # Start Service client
+        try:
+            rospy.wait_for_service(service)
+        except rospy.ServiceException, e:
+            rospy.logerr("Service call failed: {error}".format(error=e))
 
-    def __init__(self, numbers):
-        numbers = [numbers] if isinstance(numbers, int) else numbers
-        self.numbers = numbers
-        self._state = False
-        self._old_state = False
-        self._click = False
-        self.status = "release"
-        self._start = 0
-    
     def update(self, buttons):
-        self._click = False
-        # Read button
-        for num in self.numbers:
-            if num >= len(buttons):
-                raise Buttons.ButtonException("Button [{num}] not in list".format(num=num))
-        # Read button
-        self._state = all([buttons[num] for num in self.numbers])
-        self.status = "pressed" if self._state else "released" 
-        # Check edge
-        if self._state and not self._old_state:
-            self._click = True
-            # Initialize timer
-            self._start = rospy.get_time()
-        # Update status
-        self._old_state = self._state
-
-    @property
-    def time(self):
-        if self.status != "pressed":
-            return 0
-        return rospy.get_time() - self._start
-
-    def __nonzero__(self):
-        return self._click
-
-    def __str__(self):
-        return str(self.numbers)
-    
-    def __repr__(self):
-        return "{status} {click}".format(status=self.status, click=self._click)
+        # Update status button
+        self.buttons.update(buttons)
+        # publish if pressed
+        if self.buttons:
+            rospy.logdebug("{buttons}".format(buttons=self.buttons))
+            # Call service
+            service_proxy = rospy.ServiceProxy(self.service, self.service_class)
+            _ = service_proxy(self.request)
 # EOF

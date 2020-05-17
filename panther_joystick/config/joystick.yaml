@@ -1,34 +1,44 @@
-
 # Topic to read joistick status
-joy: 'joy'
+joy: joy
 # Buttons list manager
 buttons:
+    # Start service robot
+    start:
+        type: service
+        # Butttons
+        button: [8, 9]
+        # Service to send
+        service: orchestrator
+        # Message
+        request: 
+            launch: driver
+            status: True
     # Define led on off button and parameter reference
     effect:
         # Type of button
-        type: 'counter'
+        type: counter
         # max value
         max: 3
         # Button
         buttons: [7]
         # Topic to send enable/disable message
-        topic: 'enable'
+        topic: enable
     # Define emergency button for Roboteq controller
     emergency:
         # Enable/Disable button
         buttons: [3]
         # Topic to send enable/disable message
-        topic: 'roboteq/emergency_stop'
+        topic: roboteq/emergency_stop
     # Switch off the robot
     switch_off:
         # Type of button
-        type: 'time'
+        type: time
         # Send a message every second to this topic
-        topic_time: 'led'
+        topic_time: led
         # Buttons
         buttons: [4, 5]
         # Topic to send enable/disable message
-        topic: 'switch_off'
+        topic: switch_off
 # Configuration start/stop and next button
 audio:
     # Enable disable audio controller
@@ -39,8 +49,8 @@ audio:
     next: 5
     # Set songs
     song:
-        init: 'controller/R2D2-init.wav'
-        exit: 'controller/R2D2-exit.wav'
+        init: controller/R2D2-init.wav
+        exit: controller/R2D2-exit.wav
 # Text to speech
 speech:
     # Button text

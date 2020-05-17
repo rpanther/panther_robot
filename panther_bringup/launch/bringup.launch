@@ -27,7 +27,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
 <launch>
   <!-- Launch web controller       -->
-  <arg name="web"          default="true" />
+  <arg name="web"          default="false" />
   <!-- Enable/disable 2D mode -->
   <arg name="two_d_mode"   default="false" />
   <!-- Enable/Disable sensor fusion -->
@@ -38,16 +38,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
        -->
   <arg name="machine"         default="local" />
 
-  <!-- Load all device drivers:
-        - Roboteq
-        - ZED2
-        - Razor IMU
-        - RPLidar
-        - LEDs
-       -->
-  <include file="$(find panther_drivers)/launch/drivers.launch">
-    <arg name="machine"      value="$(arg machine)" />
-  </include>
   <!-- Run all common parts:
        - ROS Controllers
        - Localization nodes
@@ -58,6 +48,30 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <arg name="two_d_mode"   value="$(arg two_d_mode)" />
     <arg name="localization" value="$(arg localization)" />
   </include>
+  <!-- Run joystick controller -->
+  <include file="$(find panther_joystick)/launch/joystick.launch">
+    <arg name="output"        value="$(arg output)" />
+    <arg name="machine"       value="panther" />
+  </include>
+  <!-- Run Orchestrator and load a launch file -->
+  <node pkg="ros_orchestrator" type="orchestrator.py" name="ros_orchestrator" required="true" output="screen" clear_params="true">
+    <param name="quite" value="True" />
+    <rosparam subst_value="true">
+        orchestrator:
+            <!-- Load all device drivers:
+                  - Roboteq
+                  - ZED2
+                  - Razor IMU
+                  - RPLidar
+                  - LEDs
+                 -->
+            drivers:
+              launch: $(find panther_drivers)/launch/drivers.launch
+              args:
+                machine: $(arg machine)
+                joystick: false
+    </rosparam>
+  </node>
   <!-- Launch diagnostic aggregator -->
   <include file="$(find panther_bringup)/launch/diagnostic.launch" />
 </launch>
