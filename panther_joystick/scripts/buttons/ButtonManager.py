@@ -50,7 +50,7 @@ class ButtonManager:
             if 'buttons' not in config:
                 rospy.logwarn("Check {name} button (Miss button)".format(name=name))
                 continue
-            if 'topic' not in config or 'service' not in config:
+            if not ('topic' in config or 'service' in config):
                 rospy.logwarn("Check {name} button (Miss topic or service)".format(name=name))
                 continue
             # Load type of button
@@ -79,9 +79,10 @@ class ButtonManager:
             elif type_button == 'service':
                 request = config.get('request', {})
                 service = config['service']
+                service_class = config.get('class', "")
                 rospy.loginfo("{list_buttons} {name}. service={service}".format(list_buttons=list_buttons, name=name, service=service))
                 # Add buttons in list
-                self.buttons[name] = ServiceButton(list_buttons, service, request)
+                self.buttons[name] = ServiceButton(list_buttons, service, request, service_class=service_class)
             else:
                 rospy.logerr("{name}: {type} not in list!".format(name=name, type=type_button))
         # Launch Joystick reader

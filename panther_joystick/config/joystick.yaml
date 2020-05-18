@@ -6,9 +6,9 @@ buttons:
     start:
         type: service
         # Butttons
-        button: [8, 9]
+        buttons: [8, 9]
         # Service to send
-        service: orchestrator
+        service: /orchestrator
         # Message
         request: 
             launch: driver

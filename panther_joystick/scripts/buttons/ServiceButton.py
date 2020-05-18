@@ -31,32 +31,62 @@
 from threading import Thread
 # ROS libraries
 import rospy
-from std_msgs.msg import Bool, Int8
+import genpy.message
+import rosservice
 # buttons
 from .button import Buttons
 
 
 class ServiceButton:
 
-    def __init__(self, numbers, service, service_class, request):
+    def __init__(self, numbers, service, request, service_class=""):
         self.service = service
-        self.service_class = service_class
+        # Load request
         self.request = request
         # Load button reader
         self.buttons = Buttons(numbers)
+        # Service classes
+        self.service_proxy = None
+        self.service_class = None
         # Start Service client
+        self._thread = Thread(target=self._init_service, args=[])
+        self._thread.start()
+
+    def _init_service(self):
         try:
-            rospy.wait_for_service(service)
-        except rospy.ServiceException, e:
-            rospy.logerr("Service call failed: {error}".format(error=e))
+            rospy.wait_for_service(self.service) #, timeout=1.0)
+            # Extract service class by name
+            self.service_class = rosservice.get_service_class_by_name(self.service)
+            self.service_proxy = rospy.ServiceProxy(self.service, self.service_class)
+            rospy.loginfo("Initialized {service}".format(service=self.service))
+        except rospy.ServiceException, error:
+            rospy.logerr("Service call failed: {error}".format(error=error))
+        except rospy.ROSException, error:
+            rospy.loginfo("Service error")
 
     def update(self, buttons):
         # Update status button
         self.buttons.update(buttons)
         # publish if pressed
-        if self.buttons:
-            rospy.logdebug("{buttons}".format(buttons=self.buttons))
-            # Call service
-            service_proxy = rospy.ServiceProxy(self.service, self.service_class)
-            _ = service_proxy(self.request)
+        if not self.buttons:
+            return
+        rospy.logdebug("{buttons}".format(buttons=self.buttons))
+        # Call service
+        if self.service_proxy is None and self.service_class is None:
+            rospy.logerr("Service {service} not initializated".format(service=self.service))
+            return
+        # Make service message
+        service_class = self.service_class._request_class()
+        genpy.message.fill_message_args(service_class, [self.request])
+        # Run  service proxy
+        try:
+            res = self.service_proxy(service_class)
+            rospy.loginfo("Output {service} {res}".format(service=self.service, res=res.return_))
+        except rospy.ServiceException, error:
+            rospy.logerr("Service call failed: {error}".format(error=error))
+            # Restart initialization thread
+            self._thread.join()
+            if not self._thread.is_alive():
+                self._thread = Thread(target=self._init_service, args=[])
+                self._thread.start()
 # EOF
