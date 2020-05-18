@@ -61,6 +61,8 @@ class ServiceButton:
             rospy.loginfo("Initialized {service}".format(service=self.service))
         except rospy.ServiceException, error:
             rospy.logerr("Service call failed: {error}".format(error=error))
+        except rosservice.ROSServiceException, error:
+            rospy.logerr("Service call failed: {error}".format(error=error))
         except rospy.ROSException, error:
             rospy.loginfo("Service error")
 
@@ -77,7 +79,11 @@ class ServiceButton:
             return
         # Make service message
         service_class = self.service_class._request_class()
-        genpy.message.fill_message_args(service_class, [self.request])
+        try:
+            genpy.message.fill_message_args(service_class, [self.request])
+        except genpy.MessageException, error:
+            rospy.logerr("Message in {service}: {error}".format(service=self.service, error=error))
+            return
         # Run  service proxy
         try:
             res = self.service_proxy(service_class)
