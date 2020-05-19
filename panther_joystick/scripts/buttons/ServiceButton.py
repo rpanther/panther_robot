@@ -54,7 +54,7 @@ class ServiceButton:
 
     def _init_service(self):
         try:
-            rospy.wait_for_service(self.service) #, timeout=1.0)
+            rospy.wait_for_service(self.service)
             # Extract service class by name
             self.service_class = rosservice.get_service_class_by_name(self.service)
             self.service_proxy = rospy.ServiceProxy(self.service, self.service_class)

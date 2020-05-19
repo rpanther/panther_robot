@@ -31,12 +31,17 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   <!-- Enable/disable 2D mode -->
   <arg name="two_d_mode"   default="false" />
   <!-- Enable/Disable sensor fusion -->
-  <arg name="localization"       default="true" />
+  <arg name="localization" default="true" />
   <!-- Machine definition:
         - local (Run all node in current machine)
         - remote (Run all node in a remote address)
        -->
   <arg name="machine"         default="local" />
+  <!-- Output
+        - screen
+        - log
+       -->
+  <arg name="output"          default="log" />
 
   <!-- Run all common parts:
        - ROS Controllers
@@ -51,10 +56,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   <!-- Run joystick controller -->
   <include file="$(find panther_joystick)/launch/joystick.launch">
     <arg name="output"        value="$(arg output)" />
-    <arg name="machine"       value="panther" />
   </include>
   <!-- Run Orchestrator and load a launch file -->
-  <node pkg="ros_orchestrator" type="orchestrator.py" name="ros_orchestrator" required="true" output="screen" clear_params="true">
+  <node pkg="ros_orchestrator" type="orchestrator.py" name="ros_orchestrator" required="true" output="screen">
     <param name="quite" value="True" />
     <rosparam subst_value="true">
         orchestrator:
@@ -69,6 +73,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
               launch: $(find panther_drivers)/launch/drivers.launch
               args:
                 machine: $(arg machine)
+                output: $(arg output)
                 joystick: false
     </rosparam>
   </node>

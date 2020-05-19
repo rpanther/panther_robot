@@ -13,7 +13,7 @@ buttons:
         service: /orchestrator
         # Message
         request: 
-            launch: driver
+            launch: drivers
             status: True
     # Define led on off button and parameter reference
     effect:
