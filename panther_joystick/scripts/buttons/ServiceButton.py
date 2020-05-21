@@ -34,17 +34,17 @@ import rospy
 import genpy.message
 import rosservice
 # buttons
-from .button import Buttons
+from .button import Buttons, TimeButtons
 
 
 class ServiceButton:
 
-    def __init__(self, numbers, service, request, service_class=""):
+    def __init__(self, numbers, service, request, time=0):
         self.service = service
         # Load request
         self.request = request
         # Load button reader
-        self.buttons = Buttons(numbers)
+        self.buttons = TimeButtons(numbers, timeout=time)
         # Service classes
         self.service_proxy = None
         self.service_class = None

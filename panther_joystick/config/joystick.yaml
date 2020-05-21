@@ -15,6 +15,18 @@ buttons:
         request: 
             launch: drivers
             status: True
+    # Stop service robot
+    stop:
+        type: service
+        time: 3
+        # Butttons
+        buttons: [4, 5]
+        # Service to send
+        service: /orchestratora
+        # Message
+        request: 
+            launch: drivers
+            status: False
     # Define led on off button and parameter reference
     effect:
         # Type of button

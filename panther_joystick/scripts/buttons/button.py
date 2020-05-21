@@ -30,7 +30,7 @@
 import rospy
 
 
-class Buttons:
+class Buttons(object):
     """
     Button class definition
     """
@@ -78,4 +78,27 @@ class Buttons:
     
     def __repr__(self):
         return "{status} {click}".format(status=self.status, click=self._click)
+
+
+class TimeButtons(Buttons):
+
+    def __init__(self, numbers, timeout=0):
+        super(TimeButtons, self).__init__(numbers)
+        # status
+        self.timeout = timeout
+        self.overtime = False
+        self.old_overtime = False
+        self.done = False
+
+    def update(self, buttons):
+        super(TimeButtons, self).update(buttons)
+        self.done  = False
+        self.overtime = self.timeout > 0 and self.time >= self.timeout
+        # One time event
+        if self.overtime and not self.old_overtime:
+            self.done = True
+        self.old_overtime = self.overtime
+
+    def __nonzero__(self):
+        return self.done if self.timeout > 0 else self._click 
 # EOF
