@@ -75,9 +75,14 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                 machine: $(arg machine)
                 output: $(arg output)
                 joystick: false
+            <!-- Navigation nodes -->
+            <!-- TODO: Add here -->
     </rosparam>
   </node>
   <!-- Launch diagnostic aggregator -->
-  <include file="$(find panther_bringup)/launch/diagnostic.launch" />
+  <node pkg="diagnostic_aggregator" type="aggregator_node" name="diagnostic_aggregator">
+      <rosparam command="load" file="$(find panther_bringup)/config/diagnostic.yaml"/>
+      <rosparam command="load" file="$(find panther_drivers)/config/diagnostic.yaml"/>
+      <rosparam command="load" file="$(find ros_jetson_stats)/param/jtop.yaml"/>
+  </node>
 </launch>
-

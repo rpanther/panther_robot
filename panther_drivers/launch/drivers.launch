@@ -61,7 +61,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
   <!-- Machine definition -->
   <include file="$(find panther_machine)/$(arg machine).machine" />
-
   <!-- Load robot description -->
   <include file="$(find panther_description)/launch/description.launch" />
   <!-- Diagnostic -->
@@ -98,7 +97,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   <group if="$(arg lidar)">
     <include file="$(find panther_drivers)/launch/driver/rplidar.launch">
       <arg name="output"        value="$(arg output)" />
-    <arg name="machine"         value="panther" />
+      <arg name="machine"         value="panther" />
     </include>
   </group>
   <!-- ZED camera -->
@@ -133,4 +132,3 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     </include>
   </group>
 </launch>
-

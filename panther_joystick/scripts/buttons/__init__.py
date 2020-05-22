@@ -28,7 +28,6 @@
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-from .button import Buttons
+from .button import Buttons, TimeButtons
 from .ButtonManager import ButtonManager
-
 # EOF
