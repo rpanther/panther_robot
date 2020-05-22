@@ -37,14 +37,11 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         - remote (Run all node in a remote address)
        -->
   <arg name="machine"         default="local" />
-  <!-- Output
-        - screen
-        - log
-       -->
+  <!-- Output: {screen, log} -->
   <arg name="output"          default="log" />
-
   <!-- Run all common parts:
-       - ROS Controllers
+       - Web (Temporary off)
+       - ROS Controllers - Default: OFF
        - Localization nodes
        -->
   <include file="$(find panther_common)/launch/common.launch">
@@ -70,6 +67,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                   - LEDs
                  -->
             drivers:
+              start: True <!-- This node start on boot -->
               launch: $(find panther_drivers)/launch/drivers.launch
               args:
                 machine: $(arg machine)

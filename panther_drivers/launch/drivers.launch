@@ -121,6 +121,16 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
       <arg name="machine"    value="panther" />
     </include>
   </group>
+  <!-- 1. ROS_Control:
+          - joints
+          - differential drive
+       2. Twist mux
+      -->
+  <include file="$(find panther_control)/launch/control.launch">
+    <!-- Odometry fused with IMU is published by robot_localization, so
+          no need to publish a TF based on encoders alone. -->
+    <arg name="enable_odom_tf" value="false" />
+  </include>
   <!-- Launch joystick bridge to control:
         - sound
         - leds
