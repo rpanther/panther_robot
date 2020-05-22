@@ -52,7 +52,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   </include>
   <!-- Run joystick controller -->
   <include file="$(find panther_joystick)/launch/joystick.launch">
-    <arg name="output"        value="$(arg output)" />
+    <arg name="output"       value="$(arg output)" />
   </include>
   <!-- Run Orchestrator and load a launch file -->
   <node pkg="ros_orchestrator" type="orchestrator.py" name="ros_orchestrator" required="true" output="screen">

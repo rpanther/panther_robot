@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 # Copyright (C) 2020, Raffaello Bonghi <raffaello@rnext.it>
 # All rights reserved
@@ -27,29 +28,36 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from threading import Thread
-# ROS libraries
 import rospy
-import genpy.message
+import importlib
 import rosservice
-# buttons
-from .button import Buttons, TimeButtons
+import genpy
+from threading import Thread
 
+class Observer(Thread):
 
-class ServiceButton:
-
-    def __init__(self, numbers, service, request, time=0):
+    def __init__(self, topic_name, topic_type, timeout, service, request):
+        super(Observer, self).__init__()
+        self.timer = None
+        self.timeout = timeout
         self.service = service
-        # Load request
         self.request = request
-        # Load button reader
-        self.buttons = TimeButtons(numbers, timeout=time)
+        # Disable check timeout
+        self.last_message = -1
+        # Extract topic class
+        package, message = topic_type.split('/')
+        mod = importlib.import_module(package + '.msg')
+        topic_type = getattr(mod, message)
+        # Launch Joystick reader
+        rospy.Subscriber(topic_name, topic_type, self.topic_callback)
         # Service classes
         self.service_proxy = None
         self.service_class = None
         # Start Service client
         self._thread = Thread(target=self._init_service, args=[])
         self._thread.start()
+        # Start thread
+        self.start()
 
     def _init_service(self):
         try:
@@ -65,13 +73,7 @@ class ServiceButton:
         except rospy.ROSException, error:
             rospy.loginfo("Service error")
 
-    def update(self, buttons):
-        # Update status button
-        self.buttons.update(buttons)
-        # publish if pressed
-        if not self.buttons:
-            return
-        rospy.logdebug("{buttons}".format(buttons=self.buttons))
+    def fire_service(self):
         # Call service
         if self.service_proxy is None and self.service_class is None:
             rospy.logerr("Service {service} not initializated".format(service=self.service))
@@ -94,4 +96,41 @@ class ServiceButton:
             if not self._thread.is_alive():
                 self._thread = Thread(target=self._init_service, args=[])
                 self._thread.start()
+
+    def run(self):
+        # Running only with ROS active
+        while not rospy.is_shutdown():
+            if self.last_message > 0:
+                # Timeout in minutes
+                if rospy.get_time() - self.last_message >= self.timeout * 60:
+                    # Clean message
+                    self.last_message = -1
+                    # Fire service
+                    self.fire_service()
+        # Close thread
+        rospy.logdebug("Close!")
+
+    def topic_callback(self, data):
+        # Initialize timer
+        self.last_message = rospy.get_time()
+
+
+def topic_observer():
+    rospy.init_node('topic_observer', anonymous=True)
+    # Load topic to observer
+    topic_name = rospy.get_param("~name", "chatter")
+    topic_type = rospy.get_param("~type", "std_msgs/String")
+    timeout = rospy.get_param("~timeout", 1)
+    # Load service and request
+    service = rospy.get_param("~service", "")
+    request = rospy.get_param("~request", {})
+    rospy.loginfo("Timeout={timeout}min Name={name} Type={type}".format(timeout=timeout, name=topic_name, type=topic_type))
+    # Start observer
+    Observer(topic_name, topic_type, timeout, service, request)
+    # Spin message
+    rospy.spin()
+
+
+if __name__ == '__main__':
+    topic_observer()
 # EOF

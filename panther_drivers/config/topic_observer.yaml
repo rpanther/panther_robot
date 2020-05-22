@@ -1,0 +1,11 @@
+# Initialize topic observer
+name: velocity_controller/cmd_vel
+type: geometry_msgs/Twist
+# Time in minutes
+timeout: 5
+#Service message
+service: /orchestrator
+# Message
+request: 
+    launch: drivers
+    status: False
