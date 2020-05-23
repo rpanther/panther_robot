@@ -29,12 +29,48 @@
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import rospy
+from zed_interfaces.srv import set_pose
+from geometry_msgs.msg import PoseWithCovarianceStamped
+from tf.transformations import euler_from_quaternion
 
 
-def zed_to_pose_estimate():
-    pass
+class ZED2InitialPose:
+
+    def __init__(self, service_name='/zed/set_pose'):
+        # Wait zed service
+        rospy.wait_for_service(service_name)
+        self.set_pose = rospy.ServiceProxy(service_name, set_pose)
+        # Initialize initalpose subscriber
+        rospy.Subscriber("initialpose", PoseWithCovarianceStamped, self.pose_estimate)
+
+    def pose_estimate(self, data):
+        # Extract pose end Euler angles
+        position = data.pose.pose.position
+        orientation = data.pose.pose.orientation
+        rpy = euler_from_quaternion([orientation.x, orientation.y, orientation.z, orientation.w])
+        # Type: zed_interfaces/set_pose
+        # Args: x y z R P Y
+        try:
+            resp = self.set_pose(position.x, position.y, position.z, rpy[0], rpy[1], rpy[2])
+            if resp.done:
+                rospy.loginfo("New ZED pose xyz=({x}, {y}, {z}) rpy={rpy}".format(x=position.x, y=position.y, z=position.z, rpy=rpy))
+            else:
+                rospy.logerr("Invalid ZED pose")
+        except rospy.ServiceException as error:
+            rospy.loginfo("Service call failed: {error}".format(error=error))
+
+
+def zed_to_initialpose():
+    rospy.init_node('zed_to_initialpose')
+    rospy.loginfo("Waiting ZED service")
+    # Load zed converter
+    ZED2InitialPose()
+    # Node converter ready
+    rospy.loginfo("ZED to initialpose ready")
+    # Wait node until this node is stopped
+    rospy.spin()
 
 
 if __name__ == '__main__':
-    zed_to_pose_estimate()
+    zed_to_initialpose()
 # EOF
