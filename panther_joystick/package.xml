@@ -28,7 +28,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 <package format="2">
   <name>panther_joystick</name>
   <version>1.0.0</version>
-  <description>Joystick manager for Panther. Tools to control leds, audio and roboteq controller.</description>
+  <description>Joystick manager for Panther. Tools to control leds, audio and roboteq controller</description>
 
   <maintainer email="raffaello@rnext.it">Raffaello Bonghi</maintainer>
   <license>MIT</license>
