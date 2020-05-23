@@ -57,12 +57,11 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <arg name="output"       value="$(arg output)" />
   </include>
   <!-- Topic observer for auto shutdown -->
-  <node pkg="panther_common" type="topic_observer.py" name="topic_observer" output="screen">
-    <rosparam file="$(find panther_bringup)/config/topic_observer.yaml" command="load" />
-    <rosparam subst_value="true">
-      enable: $(arg auto_shutdown)
-    </rosparam>
-  </node>
+  <group if="$(arg auto_shutdown)">
+    <node pkg="panther_common" type="topic_observer.py" name="topic_observer" output="screen">
+      <rosparam file="$(find panther_bringup)/config/topic_observer.yaml" command="load" />
+    </node>
+  </group>
   <!-- Run Orchestrator and load a launch file -->
   <node pkg="ros_orchestrator" type="orchestrator.py" name="ros_orchestrator" required="true" output="screen">
     <param name="quite" value="True" />
