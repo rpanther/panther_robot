@@ -28,7 +28,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 <package format="2">
   <name>panther_drivers</name>
   <version>1.0.0</version>
-  <description>Panther drivers collection. Configurations and roslaunches.</description>
+  <description>Panther drivers collection. Configurations and roslaunches</description>
 
   <maintainer email="raffaello@rnext.it">Raffaello Bonghi</maintainer>
   <license>MIT</license>
@@ -39,12 +39,15 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <depend>rospy</depend>
+  <depend>zed_interfaces</depend>
   <exec_depend>roboteq_control</exec_depend>
   <exec_depend>rplidar_ros</exec_depend>
   <exec_depend>imu_transformer</exec_depend>
   <exec_depend>razor_imu_9dof</exec_depend>
   <exec_depend>sound_play</exec_depend>
   <exec_depend>ros_jetson_stats</exec_depend>
+  <exec_depend>zed_ros</exec_depend>
 
   <exec_depend>panther_description</exec_depend>
   <exec_depend>panther_control</exec_depend>
