@@ -46,7 +46,7 @@ with open(path.join(here, '../README.md'), encoding='utf-8') as f:
 # fetch values from package.xml
 setup_args = generate_distutils_setup(
     packages=['panther_joystick'],
-    package_dir={'': 'scripts'},
+    package_dir={'': 'src'},
     author_email="raffaello@rnext.it",
     description="Joystick manager for Panther. Tools to control leds, audio and roboteq controller.",
     license='MIT',

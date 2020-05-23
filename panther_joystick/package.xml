@@ -40,6 +40,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   <buildtool_depend>catkin</buildtool_depend>
   
   <depend>rospy</depend>
+  <depend>rosservice</depend>
   <depend>sound_play</depend>
   <depend>sensor_msgs</depend>
   <exec_depend>joy</exec_depend>

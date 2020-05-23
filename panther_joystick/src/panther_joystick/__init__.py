@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: UTF-8 -*-
 # Copyright (C) 2020, Raffaello Bonghi <raffaello@rnext.it>
 # All rights reserved
 #
@@ -27,36 +25,4 @@
 # WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-
-# ROS libraries
-import rospy
-# Local imports
-from panther_joystick.buttons import ButtonManager
-from panther_joystick.audio_controller import AudioController
-
-def joystick_bridge():
-    joy_topic = rospy.get_param("~joy", "joy")
-    # Run button manager
-    ButtonManager(joy_topic)
-    # Initialize audio controller
-    audio = AudioController(joy_topic)
-    audio.start()
-    # Rospy spin 
-    rospy.spin()
-    # Print exit message
-    rospy.loginfo("{node} stop".format(node=rospy.get_name()))
-
-
-if __name__ == '__main__':
-    try:
-        # Initialzie ROS python node
-        rospy.init_node('joystick_bridge', anonymous=True)
-        # Start joystick bridge
-        joystick_bridge()
-    except rospy.ROSInterruptException:
-        pass
-    except KeyboardInterrupt:
-        pass
-# EOF
 
