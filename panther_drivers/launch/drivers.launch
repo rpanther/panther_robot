@@ -110,6 +110,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
       <arg name="output"           value="$(arg output)" />
       <arg name="machine"          value="panther" />
     </include>
+    <!-- ZED set_pose service to initialpose converter -->
+    <node pkg="panther_drivers" type="zed_to_initialpose.py" name="zed_to_initialpose" output="$(arg output)" />
   </group>
   <!-- Panther body (Leds, Ultrasounds) -->
   <group if="$(arg body)">
