@@ -43,5 +43,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   <depend>sound_play</depend>
   <depend>sensor_msgs</depend>
   <exec_depend>joy</exec_depend>
+  <exec_depend>ros_orchestrator</exec_depend>
 
 </package>
