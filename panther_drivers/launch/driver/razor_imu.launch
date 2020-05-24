@@ -48,15 +48,15 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
       <!-- load configuration -->
       <rosparam command="load" file="$(find panther_drivers)/config/razor.yaml" />
       <!-- Remap imu data     -->
-      <remap from="imu" to="imu/raw"/>
+      <remap from="imu" to="imu/data"/>
       <!-- Remap imu data     -->
       <remap from="diagnostics" to="/diagnostics"/>
     </node>
 
     <!-- Launch IMU coordinate transform in base link -->
-    <node machine="$(arg machine)" pkg="imu_transformer" type="imu_transformer_node" name="imu_transformer" output="$(arg output)">
-      <remap from="imu_in/data"  to="imu/raw"/>
-      <remap from="imu_out/data" to="imu"/>
-    </node>
+    <!--<node machine="$(arg machine)" pkg="imu_transformer" type="imu_transformer_node" name="imu_transformer" output="$(arg output)">
+      <remap from="imu_in/data"  to="imu/data_raw"/>
+      <remap from="imu_out/data" to="imu/data"/>
+    </node>-->
   </group>
 </launch>

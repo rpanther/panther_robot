@@ -1,0 +1,24 @@
+- git:
+    local-name: panther
+    uri: git@github.com:rpanther/panther.git
+- git:
+    local-name: panther_hardware
+    uri: git@github.com:rpanther/panther_hardware.git
+- git:
+    local-name: ros_jetson_stats
+    uri: git@github.com:rbonghi/ros_jetson_stats.git
+- git:
+    local-name: roboteq_control
+    uri: git@github.com:rbonghi/roboteq_control.git
+- git:
+    local-name: razor_imu_9dof
+    uri: https://github.com/KristofRobot/razor_imu_9dof.git
+- git:
+    local-name: zed-ros-wrapper
+    uri: https://github.com/stereolabs/zed-ros-wrapper.git
+- git:
+    local-name: ros_webconsole
+    uri: git@github.com:rbonghi/ros_webconsole.git
+- git:
+    local-name: ros_orchestrator
+    uri: git@github.com:rbonghi/ros_orchestrator.git
