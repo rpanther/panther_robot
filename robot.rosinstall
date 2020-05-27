@@ -2,8 +2,8 @@
     local-name: panther
     uri: git@github.com:rpanther/panther.git
 - git:
-    local-name: panther_hardware
-    uri: git@github.com:rpanther/panther_hardware.git
+    local-name: panther_robot
+    uri: git@github.com:rpanther/panther_robot.git
 - git:
     local-name: ros_jetson_stats
     uri: git@github.com:rbonghi/ros_jetson_stats.git
