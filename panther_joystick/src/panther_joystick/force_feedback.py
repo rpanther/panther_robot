@@ -38,7 +38,8 @@ class ForceFeedback:
         joy_feedback_topic = joy_feedback.get("topic", "joy/set_feedback")
         self.intensity = joy_feedback.get("intensity", 1.0)
         self.enable = joy_feedback.get("enable", True)
-        rospy.loginfo(joy_feedback_topic)
+        # Force feedback info:
+        rospy.loginfo("FF {topic} intensity={intensity} enable={enable}".format(topic=joy_feedback_topic, intensity=self.intensity, enable=self.enable))
         self.pub = rospy.Publisher(joy_feedback_topic, JoyFeedbackArray, queue_size=10)
 
     def stop(self, event):
