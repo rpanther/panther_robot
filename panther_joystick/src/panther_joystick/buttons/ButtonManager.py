@@ -1,4 +1,3 @@
-# -*- coding: UTF-8 -*-
 # Copyright (C) 2020, Raffaello Bonghi <raffaello@rnext.it>
 # All rights reserved
 #
@@ -39,8 +38,10 @@ class ButtonManager:
     """
     Read status button and for each button pressed publish a message
     """
-    def __init__(self, joy_topic, name="buttons"):
+    def __init__(self, joy_topic, ff, name="buttons"):
         self.buttons = {}
+        # Load joystick feedback publisher
+        self.ff = ff
         # Get list of buttons
         buttons = rospy.get_param("~{name}".format(name=name), {})
         # Load buttons
@@ -62,27 +63,27 @@ class ButtonManager:
                 topic = config['topic']
                 rospy.loginfo("{list_buttons} {name}. topic={topic} - status={status}".format(list_buttons=list_buttons, name=name, topic=topic, status=status))
                 # Add buttons in list
-                self.buttons[name] = BoolButton(list_buttons, topic, status=status)
+                self.buttons[name] = BoolButton(list_buttons, topic, self.ff, status=status)
             elif type_button == 'counter':
                 max_value = config.get('max', 10)
                 topic = config['topic']
                 rospy.loginfo("{list_buttons} {name}. topic={topic} - max={max}".format(list_buttons=list_buttons, name=name, topic=topic, max=max_value))
                 # Add buttons in list
-                self.buttons[name] = CounterButton(list_buttons, topic, max_value=max_value)
+                self.buttons[name] = CounterButton(list_buttons, topic, self.ff, max_value=max_value)
             elif type_button == 'time':
                 time = config.get('time', 3.5)
                 topic_timer = config.get('topic_time', "")
                 topic = config['topic']
                 rospy.loginfo("{list_buttons} {name}. topic={topic} - time={time}".format(list_buttons=list_buttons, name=name, topic=topic, time=time))
                 # Add buttons in list
-                self.buttons[name] = TimeButton(list_buttons, topic, time=time, topic_timer=topic_timer)
+                self.buttons[name] = TimeButton(list_buttons, topic, self.ff, time=time, topic_timer=topic_timer)
             elif type_button == 'service':
                 request = config.get('request', {})
                 service = config['service']
                 service_timer = config.get('time', 0)
                 rospy.loginfo("{list_buttons} {name}. service={service}".format(list_buttons=list_buttons, name=name, service=service))
                 # Add buttons in list
-                self.buttons[name] = ServiceButton(list_buttons, service, request, time=service_timer)
+                self.buttons[name] = ServiceButton(list_buttons, service, request, self.ff, time=service_timer)
             else:
                 rospy.logerr("{name}: {type} not in list!".format(name=name, type=type_button))
         # Launch Joystick reader

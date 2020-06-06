@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: UTF-8 -*-
 # Copyright (C) 2020, Raffaello Bonghi <raffaello@rnext.it>
 # All rights reserved
 #
@@ -28,38 +26,31 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
-# ROS libraries
 import rospy
-# Local imports
-from panther_joystick.buttons import ButtonManager
-from panther_joystick.audio_controller import AudioController
-from panther_joystick.force_feedback import ForceFeedback
-
-def joystick_bridge():
-    joy_topic = rospy.get_param("~joy", "joy")
-    # Load Force Feedback controller
-    ff = ForceFeedback()
-    # Run button manager
-    ButtonManager(joy_topic, ff)
-    # Initialize audio controller
-    audio = AudioController(joy_topic)
-    audio.start()
-    # Rospy spin 
-    rospy.spin()
-    # Print exit message
-    rospy.loginfo("{node} stop".format(node=rospy.get_name()))
+from sensor_msgs.msg import JoyFeedbackArray, JoyFeedback
 
 
-if __name__ == '__main__':
-    try:
-        # Initialzie ROS python node
-        rospy.init_node('joystick_bridge', anonymous=True)
-        # Start joystick bridge
-        joystick_bridge()
-    except rospy.ROSInterruptException:
-        pass
-    except KeyboardInterrupt:
-        pass
+class ForceFeedback:
+
+    def __init__(self):
+        # Load force feedback parameters
+        joy_feedback = rospy.get_param("~joy_ff", {})
+        joy_feedback_topic = joy_feedback.get("topic", "joy/set_feedback")
+        self.intensity = joy_feedback.get("intensity", 1.0)
+        rospy.loginfo(joy_feedback_topic)
+        self.pub = rospy.Publisher(joy_feedback_topic, JoyFeedbackArray, queue_size=10)
+
+    def stop(self, event):
+        left = JoyFeedback(type=JoyFeedback.TYPE_RUMBLE, id=0, intensity=0)
+        right = JoyFeedback(type=JoyFeedback.TYPE_RUMBLE, id=1, intensity=0)
+        feed = JoyFeedbackArray([left, right])
+        self.pub.publish(feed)
+
+    def feedback(self, intensity=0.5, time=0.2):
+        left = JoyFeedback(type=JoyFeedback.TYPE_RUMBLE, id=0, intensity=self.intensity)
+        right = JoyFeedback(type=JoyFeedback.TYPE_RUMBLE, id=1, intensity=self.intensity)
+        feed = JoyFeedbackArray([left, right])
+        self.pub.publish(feed)
+
+        rospy.Timer(rospy.Duration(time), self.stop, oneshot=True)
 # EOF
-

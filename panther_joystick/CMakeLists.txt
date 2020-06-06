@@ -11,3 +11,7 @@ include_directories()
 
 catkin_install_python(PROGRAMS scripts/joystick_bridge.py
                       DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+# Install config and launch folders
+install(DIRECTORY launch config
+DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})

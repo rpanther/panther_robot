@@ -31,6 +31,7 @@
 # ROS libraries
 import rospy
 from std_msgs.msg import Bool, Int8
+from sensor_msgs.msg import JoyFeedbackArray, JoyFeedback
 # buttons
 from .button import Buttons
 
@@ -39,7 +40,8 @@ class TimeButton:
     """
     Convert a button pressed to timer topic
     """
-    def __init__(self, numbers, topic, topic_timer="", time=3.5):
+    def __init__(self, numbers, topic, ff, topic_timer="", time=3.5):
+        self.ff = ff
         # Load button reader
         self.buttons = Buttons(numbers)
         # Initialize time
@@ -86,9 +88,10 @@ class CounterButton:
     """
     Convert a button pressed to counter topic
     """
-    def __init__(self, numbers, topic, max_value=10):
+    def __init__(self, numbers, topic, ff, max_value=10):
         self.counter = 0
         self.max_value = max_value
+        self.ff = ff
         # Load button reader
         self.buttons = Buttons(numbers)
         # Load topic output
@@ -106,14 +109,17 @@ class CounterButton:
             # reset counter
             if self.counter > self.max_value:
                 self.counter = 0
+            # Publish a force feedback message
+            self.ff.feedback()
 
 
 class BoolButton:
     """
     Convert a button pressed to boolean topic
     """
-    def __init__(self, numbers, topic, status=True):
+    def __init__(self, numbers, topic, ff, status=True):
         self.status = status
+        self.ff = ff
         # Load button reader
         self.buttons = Buttons(numbers)
         # Load topic output
@@ -128,4 +134,6 @@ class BoolButton:
             self.pub.publish(self.status)
             # Update status
             self.status = not self.status
+            # Publish a force feedback message
+            self.ff.feedback()
 # EOF

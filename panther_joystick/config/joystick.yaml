@@ -2,6 +2,10 @@
 # https://rpanther.github.io/joystick.html
 # Topic to read joistick status
 joy: joy
+# Force feedback
+joy_ff:
+    topic: joy/set_feedback
+    intensity: 1.0
 # Buttons list manager
 buttons:
     # Start service robot

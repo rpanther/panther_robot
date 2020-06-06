@@ -38,8 +38,10 @@ from .button import Buttons, TimeButtons
 
 class ServiceButton:
 
-    def __init__(self, numbers, service, request, time=0):
+    def __init__(self, numbers, service, request, ff, time=0):
+        self.ff = ff
         self.service = service
+        self.time_service = 0.5 if time == 0 else time
         # Load request
         self.request = request
         # Load button reader
@@ -87,6 +89,8 @@ class ServiceButton:
         try:
             res = self.service_proxy(service_class)
             rospy.loginfo("Output {service} {res}".format(service=self.service, res=res.return_))
+            # Publish a force feedback message
+            self.ff.feedback(time=self.time_service)
         except rospy.ServiceException, error:
             rospy.logerr("Service call failed: {error}".format(error=error))
             # Restart initialization thread
