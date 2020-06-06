@@ -37,6 +37,7 @@ class ForceFeedback:
         joy_feedback = rospy.get_param("~joy_ff", {})
         joy_feedback_topic = joy_feedback.get("topic", "joy/set_feedback")
         self.intensity = joy_feedback.get("intensity", 1.0)
+        self.enable = joy_feedback.get("enable", True)
         rospy.loginfo(joy_feedback_topic)
         self.pub = rospy.Publisher(joy_feedback_topic, JoyFeedbackArray, queue_size=10)
 
@@ -47,10 +48,13 @@ class ForceFeedback:
         self.pub.publish(feed)
 
     def feedback(self, intensity=0.5, time=0.2):
+        if not self.enable:
+            return
+        # Force feedback for all motors
         left = JoyFeedback(type=JoyFeedback.TYPE_RUMBLE, id=0, intensity=self.intensity)
         right = JoyFeedback(type=JoyFeedback.TYPE_RUMBLE, id=1, intensity=self.intensity)
         feed = JoyFeedbackArray([left, right])
         self.pub.publish(feed)
-
+        # Set a time to stop the vibration
         rospy.Timer(rospy.Duration(time), self.stop, oneshot=True)
 # EOF
